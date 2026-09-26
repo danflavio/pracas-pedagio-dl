@@ -1,0 +1,91 @@
+# ============================================================
+# .gitignore - Projeto Previsao de Trafego em Pracas de Pedagio
+# Regra de ouro: guardamos FONTE (escrito por nos), nao ARTEFATO
+# (gerado ao rodar). Documentado no README.
+# ============================================================
+
+# ------------------------------------------------------------
+# 1. DADOS (baixados da fonte ou derivados; ~900 MB, reproduziveis)
+# ------------------------------------------------------------
+data/
+*.csv
+*.parquet
+*.xlsx
+*.feather
+
+# ...MAS os resultados exportados sao legiveis e pequenos -> versionamos.
+# O sinal "!" re-inclui arquivos que os padroes acima tinham ignorado.
+!results/**/*.csv
+!report/**/*.csv
+
+# ------------------------------------------------------------
+# 2. MODELOS treinados e checkpoints (gerados pelo treino)
+# ------------------------------------------------------------
+models/
+*.keras
+*.h5
+*.hdf5
+*.ckpt
+*.pt
+*.pth
+*.onnx
+*.pkl
+*.joblib
+
+# ------------------------------------------------------------
+# 3. REGISTRO CRU DA BUSCA (Optuna/DB) - gerado e ilegivel.
+#    Versionamos so os EXPORTS (best_trials.csv, graficos) em results/.
+# ------------------------------------------------------------
+*.db
+*.sqlite
+*.sqlite3
+optuna_journal.log
+
+# ------------------------------------------------------------
+# 4. NOTEBOOKS - checkpoints automaticos do Jupyter
+# ------------------------------------------------------------
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ------------------------------------------------------------
+# 5. PYTHON / AMBIENTE VIRTUAL / BUILD
+# ------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+.conda/
+.python-version
+
+# ------------------------------------------------------------
+# 6. FERRAMENTAS / CACHES
+# ------------------------------------------------------------
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.hypothesis/
+
+# ------------------------------------------------------------
+# 7. SISTEMA OPERACIONAL / EDITORES
+# ------------------------------------------------------------
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+
+# ------------------------------------------------------------
+# 8. SEGREDOS E CONFIG LOCAL (ex.: credenciais do storage remoto)
+# ------------------------------------------------------------
+.env
+.env.*
+*.key
+credentials.json

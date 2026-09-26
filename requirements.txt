@@ -1,0 +1,27 @@
+# requirements.txt - dependencias do projeto
+# Python 3.11+  |  instale com: pip install -r requirements.txt
+# Versoes iniciais soltas; fixamos as exatas com: pip freeze > requirements.txt
+
+# --- Manipulacao de dados ---
+numpy
+pandas
+pyarrow
+
+# --- Metricas e utilidades de ML ---
+scikit-learn
+
+# --- Deep Learning (TensorFlow/Keras) ---
+tensorflow
+
+# --- Hiperparametrizacao ---
+optuna
+optuna-dashboard
+
+# --- Visualizacao ---
+matplotlib
+seaborn
+
+# --- Notebooks e utilidades ---
+jupyterlab
+tqdm
+pyyaml
