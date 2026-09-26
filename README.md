@@ -29,8 +29,15 @@ equivalentes, relacionando desempenho, capacidade e custo computacional.
 
 ## 3. Onde os dados ficam
 
-> **DECISAO PENDENTE (F0):** definir a copia compartilhada entre os integrantes -
-> Hugging Face privado **ou** Google Drive compartilhado.
+Copia compartilhada entre os integrantes: **Google Drive** (pasta compartilhada).
+Os arquivos originais sao obtidos pelos links abaixo; o download e automatizado por
+`download_data.py`, que registra URL, data de download e SHA-256 (reprodutibilidade).
+
+| Ano | Link (Google Drive) |
+|---|---|
+| 2024 | https://drive.google.com/file/d/1vUHJ-L4f9kRrRmRa5qlfdb68jSn5oOqN/view |
+| 2025 | https://drive.google.com/file/d/1hDvgQXU4UvhpE3dfSUxx72fO3Phter3t/view |
+| 2026 | https://drive.google.com/file/d/1ej0hH6aIV3HvMaoDd9jXfSZJd2hF8lzw/view |
 
 Caminhos locais esperados:
 
@@ -67,8 +74,8 @@ pip install -r requirements.txt
 # 4. verificar a instalacao
 python -c "import tensorflow as tf; print('TF', tf.__version__)"
 
-# 5. (opcional) fixar as versoes exatas depois que tudo funcionar
-pip freeze > requirements.txt
+# 5. (opcional) registrar as versoes exatas do ambiente testado
+pip freeze > requirements.lock.txt
 ```
 
 > Apos ativar, o prompt exibe `(.venv)`. Para sair, use `deactivate`.
