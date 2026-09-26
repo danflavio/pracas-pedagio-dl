@@ -1,0 +1,29 @@
+[
+  {
+    "ano": 2024,
+    "arquivo": "volume_pedagio_2024.csv",
+    "caminho": "data/raw/volume_pedagio_2024.csv",
+    "url_origem": "https://drive.google.com/file/d/1vUHJ-L4f9kRrRmRa5qlfdb68jSn5oOqN/view",
+    "bytes": 304582824,
+    "sha256": "70e6c61ed5d44c5548dd6f00ae632f8f3ec6e40f5f588b80cb30ede5ce1200ab",
+    "baixado_em": "2026-09-26T15:22:57+00:00"
+  },
+  {
+    "ano": 2025,
+    "arquivo": "volume_pedagio_2025.csv",
+    "caminho": "data/raw/volume_pedagio_2025.csv",
+    "url_origem": "https://drive.google.com/file/d/1hDvgQXU4UvhpE3dfSUxx72fO3Phter3t/view",
+    "bytes": 302130451,
+    "sha256": "dac32bc89f96a149babf4aac94d4b6efbdeae5a981f75022d315551a7a1eb1c8",
+    "baixado_em": "2026-09-26T15:23:08+00:00"
+  },
+  {
+    "ano": 2026,
+    "arquivo": "volume_pedagio_2026.csv",
+    "caminho": "data/raw/volume_pedagio_2026.csv",
+    "url_origem": "https://drive.google.com/file/d/1ej0hH6aIV3HvMaoDd9jXfSZJd2hF8lzw/view",
+    "bytes": 247026748,
+    "sha256": "609dd987d2b4f32735aecb5a2d529f5cd52cf54bc855526d4eb0252a32f15fe3",
+    "baixado_em": "2026-09-26T15:23:19+00:00"
+  }
+]

@@ -12,6 +12,9 @@ numpy==2.5.3
 pandas==3.0.6
 pyarrow==25.0.1
 
+# --- Aquisicao de dados ---
+gdown==6.4.0
+
 # --- Metricas e utilidades de ML ---
 scikit-learn==1.9.1
 
