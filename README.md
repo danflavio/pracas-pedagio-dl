@@ -82,6 +82,12 @@ pip freeze > requirements.lock.txt
 > No VS Code, selecione o interpretador em `Ctrl+Shift+P` > "Python: Select Interpreter" >
 > escolha o que aponta para `.venv`.
 
+> **Extensoes do VS Code:** o projeto versiona `.vscode/extensions.json` com as extensoes
+> recomendadas (**Python**, **Pylance** e **Jupyter**). Ao abrir a pasta no VS Code, aceite o
+> aviso "This workspace has extension recommendations" para instala-las de uma vez. A extensao
+> **Jupyter** e necessaria para rodar os notebooks em `notebooks/` (abrir o `.ipynb`, escolher o
+> kernel que aponta para `.venv` e executar as celulas com `Shift+Enter`).
+
 ## 5. Estrutura do repositorio
 
 ```text
