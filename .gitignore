@@ -79,7 +79,8 @@ htmlcov/
 .DS_Store
 Thumbs.db
 Desktop.ini
-.vscode/
+.vscode/*
+!.vscode/extensions.json
 .idea/
 
 # ------------------------------------------------------------
@@ -89,3 +90,10 @@ Desktop.ini
 .env.*
 *.key
 credentials.json
+
+
+# ------------------------------------------------------------
+# 9. Pastas temporárias
+# ------------------------------------------------------------
+temp/
+.temp/
