@@ -20,11 +20,11 @@
 
 | Decisao | Recomendacao padrao | Responsavel | Prazo |
 |---|---|---|---|
-| Unidade de observacao | `concessionaria x praca x mes_ano x tipo_de_veiculo` (agregando sentido/cobranca/categoria) | A/B | 29/09 |
-| Variavel alvo | Volume total da praca no mes **t+1** (regressao de 1 passo) | A/B | 29/09 |
+| Unidade de observacao | `concessionaria x praca x data x tipo_de_veiculo` (agregando sentido/cobranca/categoria) | A/B | 29/09 |
+| Variavel alvo | Volume total da praca no dia **t+1** (regressao de 1 passo) | A/B | 29/09 |
 | Estrategia de previsao | Principal: 1 passo a frente. Bonus: multi-step t+1..t+3 | A/B | 30/09 |
 | Protocolo de split | **1o Cronologico global** (correto para prever o futuro) **+ 2o por grupos/pracas** (generalizacao p/ pracas novas) | A/B | 30/09 |
-| Validacao cruzada | **Opcional (PDF Sec.2.3):** k-fold **temporal** (rolling-origin / janela expansiva, ex.: 3 folds) para estimar a **variancia** dos experimentos, ja que a serie e curta (~33 meses) | A/B | 30/09 |
+| Validacao cruzada | **Opcional (PDF Sec.2.3):** k-fold **temporal** (rolling-origin / janela expansiva, ex.: 3 folds) para estimar a **variancia** dos experimentos; a serie diaria cobre ~33 meses (~975 dias por praca) | A/B | 30/09 |
 | Framework | TensorFlow/Keras (camadas `SimpleRNN`, `GRU`, `LSTM`) ou PyTorch | A/B | 27/09 |
 | Repositorio | GitHub da dupla (dados fora do git) | A/B | 26/09 |
 
@@ -75,16 +75,16 @@ Legenda de responsaveis: **A** = Daniel Flavio - **B** = Guilherme Martins - **A
 
 ### F2 - EDA e definicao do problema - 28/09-01/10
 
-- [ ] 28/09 - **A** - Parse de `mes_ano` (`dd/mm/yyyy`, dia sempre 01) -> `datetime`; `volume_total` -> float (tratar separador de milhar e virgula decimal)
+- [ ] 28/09 - **A** - Parse de `mes_ano` (`dd/mm/yyyy`, **data diaria**) -> `datetime`; `volume_total` -> float (tratar separador de milhar e virgula decimal)
 - [ ] 28/09 - **A** - Definir formalmente **unidade de observacao** e a **variavel alvo** (ver secao 1)
-- [ ] 29/09 - **B** - Estatisticas descritivas: no de pracas, no de meses, contagem por `concessionaria`, `tipo_de_veiculo`, `sentido`, `categoria_eixo`
+- [ ] 29/09 - **B** - Estatisticas descritivas: no de pracas, no de dias, contagem por `concessionaria`, `tipo_de_veiculo`, `sentido`, `categoria_eixo`
 - [ ] 29/09 - **B** - **Distribuicao de `volume_total`**: faixa, dispersao, assimetria, outliers; discutir **zero-inflacao** e combinacoes vazias
-- [ ] 29/09 - **A** - Frequencia de **valores ausentes e duplicados**; investigar meses faltantes por praca (serie descontinua)
+- [ ] 29/09 - **A** - Frequencia de **valores ausentes e duplicados**; investigar **dias faltantes** por praca (serie descontinua)
 - [ ] 29/09 - **B** - **Valores potencialmente anomalos** (PDF Sec.2.1): definir criterio (ex.: IQR ou z-score robusto por praca) para picos/quedas atipicas; decidir **manter, winsorizar, marcar ou remover** - justificar e registrar no relatorio
 - [ ] 30/09 - **A** - Visualizacoes: serie temporal de pracas representativas, histograma do volume, heatmap praca x mes
-- [ ] 30/09 - **B** - Analisar **cobertura temporal**: confirmar periodo exato (jan/2024 ate qual mes de 2026?) e meses incompletos
+- [ ] 30/09 - **B** - Analisar **cobertura temporal**: confirmar periodo exato (jan/2024 ate qual mes de 2026?) e **dias faltantes**
 - [ ] 30/09 - **A+B** - **Fechar decisoes pendentes** da secao 1 e registrar no relatorio
-- [ ] 01/10 - **A+B** - Justificar selecao/exclusao de atributos e **checar risco de vazamento** (nenhuma feature pode conter o valor do alvo do mes t+1)
+- [ ] 01/10 - **A+B** - Justificar selecao/exclusao de atributos e **checar risco de vazamento** (nenhuma feature pode conter o valor do alvo do dia t+1)
 
 **Pronto quando:** secao "Descricao do problema e dos dados" do relatorio escrita, com estatisticas, graficos e decisoes justificadas.
 
@@ -92,7 +92,7 @@ Legenda de responsaveis: **A** = Daniel Flavio - **B** = Guilherme Martins - **A
 
 ### F3 - Pre-processamento e janelamento - 01-04/10
 
-- [ ] 01/10 - **A** - Agregar/pivotar para o formato multivariado: uma linha por `praca x mes`, colunas = canais de volume (ex.: total, passeio, comercial, moto, share comercial)
+- [ ] 01/10 - **A** - Agregar/pivotar para o formato multivariado: uma linha por `praca x dia`, colunas = canais de volume (ex.: total, passeio, comercial, moto, share comercial)
 - [ ] 01/10 - **B** - Codificacao de variaveis categoricas (one-hot ou embeddings - justificar a escolha)
 - [ ] 02/10 - **A** - **Padronizacao/normalizacao fitada SOMENTE no treino** e aplicada em val/teste (salvar os parametros do scaler)
 - [ ] 02/10 - **B** - Construir **janelas (sliding windows)** respeitando a ordem temporal; definir `X` (janela x canais) e `y` (t+1) e documentar as **dimensoes de entrada/saida**
@@ -126,7 +126,7 @@ Legenda de responsaveis: **A** = Daniel Flavio - **B** = Guilherme Martins - **A
 - [ ] 08/10 - **A** - Configurar o **estudo**: metrica = RMSE (ou MAE) **na validacao**, `seed` fixo, pruner (`MedianPruner`/`Hyperband`)
 - [ ] 08/10 - **B** - Definir **espaco de busca** e justifica-lo no relatorio:
   - [ ] `model_type` = {SimpleRNN, GRU, LSTM} (categorical -> comparacao sob condicoes equivalentes)
-  - [ ] `window_size` em {3, 6, 9, 12} meses
+  - [ ] `window_size` em dias (ex.: {7, 14, 30, 90})
   - [ ] `units` por camada em 32-256 (log)
   - [ ] `n_layers` em 1-3
   - [ ] `dropout` em 0-0,5 - `recurrent_dropout` em 0-0,3
@@ -148,7 +148,7 @@ Legenda de responsaveis: **A** = Daniel Flavio - **B** = Guilherme Martins - **A
 
 - [ ] 11/10 - **A** - **Comparacao SimpleRNN vs GRU vs LSTM** com a melhor config, sob condicoes identicas (dados, janela, seed, epocas) - tabela + grafico
 - [ ] 12/10 - **A** - **Profundidade e largura**: camadas recorrentes (1-3) x unidades (32-256) -> desempenho vs **no de parametros** vs tempo
-- [ ] 12/10 - **B** - **Tamanhos de janela**: 3, 6, 9, 12 meses -> qual melhora a previsao? efeito em custo, estabilidade e overfitting
+- [ ] 12/10 - **B** - **Tamanhos de janela**: em dias (ex.: 7, 14, 30, 90) -> qual melhora a previsao? efeito em custo, estabilidade e overfitting
 - [ ] 13/10 - **B** - **Dependencias de longo prazo**: janelas maiores ajudam? discutir com evidencia
 - [ ] 13/10 - **A** - **Estrategia de previsao**: relatar 1 passo vs multi-step (se implementado) e as **dimensoes de entrada/saida**
 - [ ] 13/10 - **A+B** - **Custo**: tempo de treino, tempo de inferencia (ms/predicao) e no de parametros por arquitetura

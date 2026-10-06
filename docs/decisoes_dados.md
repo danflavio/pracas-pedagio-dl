@@ -32,7 +32,7 @@ Convencoes:
 ## D-003 - `mes_ano` chega como texto
 
 - Data: 2026-10-05
-- Decisao: converter `mes_ano` (formato `dd/mm/yyyy`, dia sempre 01) para data na F2.
+- Decisao: converter `mes_ano` (formato `dd/mm/yyyy`, **data diaria**) para data na F2 (ver D-007).
 - Evidencia: o pandas infere `str`.
 - Alternativas: manter como texto (impede ordenacao temporal e janelamento).
 - Impacto: sem a conversao, nao ha como montar a serie temporal nem as janelas deslizantes.
@@ -59,23 +59,39 @@ Convencoes:
 
 ---
 
-## D-006 - `categoria_eixo` com tipos misturados (pendente)
+## D-006 - `categoria_eixo` com representacao mista (codigo vs rotulo)
 
-- Data: 2026-10-05
-- Decisao: (pendente) investigar os valores nao numericos de `categoria_eixo` e definir o tipo
-  antes de gravar o Parquet.
-- Evidencia: na leitura completa dos anos o pandas emite
-  `DtypeWarning: Columns (5: categoria_eixo) have mixed types`. A amostra de 100 mil linhas havia
-  inferido `int64`; o problema esta em linhas fora da amostra.
-- Alternativas: forcar `dtype` no `read_csv` (mascara o problema, nao resolve); investigar quais
-  valores existem e por que.
-- Impacto: sem resolver, a coluna pode virar texto de forma inconsistente entre os anos.
+- Data: 2026-10-06
+- Decisao (F1, imediata): ler `categoria_eixo` como `str` na unificacao e no Parquet, para manter
+  o tipo consistente entre os anos e eliminar o `DtypeWarning`.
+- Evidencia: 2024 e 2026 trazem apenas codigo numerico (ex.: `2`, `10`); em 2025, 15.783 linhas
+  (0,48% do ano) usam rotulo por extenso (ex.: `Veiculo Comercial 2 eixos`, `Moto`), concentradas
+  em jan-mar/2025. A amostra de 100 mil linhas de 2025 havia inferido `int64`; o texto aparece
+  fora da amostra.
+- Alternativas: `to_numeric` direto (converte o texto em `NaN` - nao padroniza); usar a coluna como
+  feature (exigiria mapear codigo <-> rotulo).
+- Impacto: como a unidade de observacao agrega sobre `categoria_eixo`, o alvo nao e afetado.
+- Pendente (F3): decidir o destino da coluna - (a) descartar, (b) usar como feature, ou
+  (c) padronizar para numerico. A opcao (c) exige definir o mapeamento codigo <-> rotulo
+  (atencao a inconsistencias do texto de 2025: `7 Eixos` vs `7 eixos`; `Acima de 10 Eixos`).
+
+## D-007 - Granularidade diaria (nao mensal)
+
+- Data: 2026-10-06
+- Decisao: modelar na granularidade **diaria**; alvo = volume da praca no **dia t+1**.
+- Evidencia: `mes_ano` tem 366 (2024), 365 (2025) e 243 (2026) datas distintas, com todos os dias
+  01-31 - ou seja, e uma data diaria apesar do nome. O `head()` enganava por o arquivo estar
+  ordenado por data.
+- Alternativas: agregar para mensal (perde padroes de dia da semana/feriado e reduz de ~975 para
+  ~33 pontos por praca, prejudicando o treino das RNNs).
+- Impacto: alvo passa a ser t+1 em dias; janelas redefinidas em dias; exige features de calendario
+  (dia da semana, mes, feriado). Atualiza PLANO (F2/F5/F6) e README.
 
 ---
 
 ## Pendente
 
-- D-007 (a verificar) - Duplicatas na virada de ano: o mesmo registro pode aparecer em dois
+- D-008 (a verificar) - Duplicatas na virada de ano: o mesmo registro pode aparecer em dois
   arquivos (ex.: dezembro/2024 no arquivo de 2024 e no de 2025). Verificar antes de considerar a
   unificacao concluida.
 - Contagem de linhas: 2024 = 3.312.763 | 2025 = 3.274.157 | 2026 = 2.597.234 (total 9.184.154).

@@ -7,7 +7,7 @@ Trabalho Pratico da disciplina de Deep Learning - serie temporal multivariada.
 | Integrantes | Daniel Flavio, Guilherme Martins |
 | Frente | 3.2 Redes Recorrentes (SimpleRNN vs GRU vs LSTM) |
 | Tarefa | Regressao (serie temporal multivariada) |
-| Variavel alvo | Volume de trafego da praca no mes t+1 |
+| Variavel alvo | Volume de trafego da praca no dia t+1 |
 | Entrega | ate 15/10 (relatorio + GitHub + estudo de hiperparametros + tabelas/graficos) |
 | Plano | [PLANO_DE_TAREFAS.md](PLANO_DE_TAREFAS.md) |
 | Decisoes | [docs/decisoes_dados.md](docs/decisoes_dados.md) |
