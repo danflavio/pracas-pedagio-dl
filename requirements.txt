@@ -33,3 +33,4 @@ seaborn==0.13.2
 jupyterlab==4.6.4
 tqdm==4.70.1
 PyYAML==6.0.3
+nbstripout==0.9.1
