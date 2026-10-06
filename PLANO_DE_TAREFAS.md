@@ -38,7 +38,7 @@ Legenda de responsaveis: **A** = Daniel Flavio - **B** = Guilherme Martins - **A
 
 ### F0 - Setup do projeto - 25-26/09
 
-- [ ] 26/09 - **B** - Criar repositorio no GitHub com a estrutura:
+- [x] 26/09 - **B** - Criar repositorio no GitHub com a estrutura:
   ```
   data/            (no .gitignore)
   notebooks/
@@ -51,8 +51,8 @@ Legenda de responsaveis: **A** = Daniel Flavio - **B** = Guilherme Martins - **A
   ```
 - [x] 26/09 - **A** - Criar `.gitignore` com `data/`, `*.csv`, `*.parquet`, `*.h5`, `*.keras`, `.ipynb_checkpoints/`
 - [x] 26/09 - **A+B** - Definir ambiente: `requirements.txt` (numpy, pandas, pyarrow, scikit-learn, tensorflow/torch, optuna, optuna-dashboard, matplotlib, seaborn)
-- [ ] 26/09 - **A+B** - Definir onde os dados ficam (Hugging Face privado **ou** Google Drive compartilhado) e documentar no README
-- [ ] 26/09 - **A+B** - Definir **seed global** (ex.: 42) e registrar no README
+- [x] 26/09 - **A+B** - Definir onde os dados ficam (Hugging Face privado **ou** Google Drive compartilhado) e documentar no README
+- [x] 26/09 - **A+B** - Definir **seed global** (ex.: 42) e registrar no README
 
 **Pronto quando:** repo criado, `.gitignore` impedindo commit de CSV, ambiente instalavel via `requirements.txt`.
 
@@ -62,9 +62,10 @@ Legenda de responsaveis: **A** = Daniel Flavio - **B** = Guilherme Martins - **A
 
 - [x] 26/09 - **A** - Baixar/colar os 3 CSVs (2024, 2025, 2026) no local de dados
 - [x] 27/09 - **A** - `download_data.py`: registrar URL de origem, data de download e **SHA-256** de cada arquivo (reprodutibilidade)
-- [ ] 27/09 - **B** - Auditar **schema de cada ano**: nomes/ordem das colunas, encoding (UTF-8 BOM?), separador (`;`), decimal com virgula (`"135,00"`)
-- [ ] 27/09 - **B** - Checar **deriva de schema entre anos** (colunas que aparecem/somem, valores novos em `sentido`, `tipo_cobranca`, `tipo_de_veiculo`)
-- [ ] 28/09 - **A** - Concatenar os 3 anos em um unico DataFrame com coluna `ano_origem` (rastreabilidade)
+- [x] 27/09 - **B** - Auditar **schema de cada ano**: nomes/ordem das colunas, encoding (UTF-8 BOM?), separador (`;`), decimal com virgula (`"135,00"`)
+- [x] 27/09 - **B** - Checar **deriva de schema entre anos** (colunas que aparecem/somem, valores novos em `sentido`, `tipo_cobranca`, `tipo_de_veiculo`)
+- [x] 28/09 - **A** - Concatenar os 3 anos em um unico DataFrame com coluna `ano_origem` (rastreabilidade)
+- [ ] 05/10 - **A+B** - Investigar `categoria_eixo` com tipos misturados (DtypeWarning) e definir o tipo antes do Parquet (ver `docs/decisoes_dados.md`, D-006)
 - [ ] 28/09 - **A** - Converter para **Parquet** (`data/trafego_pedagio.parquet`) - reduz muito o tamanho e acelera o carregamento
 - [ ] 28/09 - **B** - Checar duplicatas (mesma praca/mes/categoria em dois arquivos na virada de ano)
 

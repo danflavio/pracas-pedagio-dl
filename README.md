@@ -96,7 +96,7 @@ notebooks/       exploracao e analises (EDA)
 src/             preprocess.py, dataset.py, model.py, train.py, optuna_search.py
 results/         tabelas, figuras e export da busca do Optuna
 report/          relatorio tecnico
-docs/            enunciado e material de apoio
+docs/            enunciado, material de apoio e registro de decisoes
 download_data.py  registrar origem, data e SHA-256 dos arquivos
 requirements.txt  dependencias do projeto
 README.md         este arquivo
@@ -117,3 +117,6 @@ README.md         este arquivo
 
 Acompanhe o andamento pelas fases F0-F8 no [PLANO_DE_TAREFAS.md](PLANO_DE_TAREFAS.md).
 Desvios de planejamento devem ser registrados aqui.
+
+As decisoes sobre os dados (encoding, separador, alvo, categorias, etc.) ficam registradas em
+[docs/decisoes_dados.md](docs/decisoes_dados.md).
