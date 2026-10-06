@@ -1,6 +1,6 @@
 # Previsao de Volume de Trafego em Pracas de Pedagio
 
-Trabalho Pratico da disciplina de Deep Learning - modelagem, hiperparametrizacao e avaliacao experimental.
+Trabalho Pratico da disciplina de Deep Learning - serie temporal multivariada.
 
 | Item | Valor |
 |---|---|
@@ -9,29 +9,21 @@ Trabalho Pratico da disciplina de Deep Learning - modelagem, hiperparametrizacao
 | Tarefa | Regressao (serie temporal multivariada) |
 | Variavel alvo | Volume de trafego da praca no mes t+1 |
 | Entrega | ate 15/10 (relatorio + GitHub + estudo de hiperparametros + tabelas/graficos) |
-| Plano de tarefas | [PLANO_DE_TAREFAS.md](PLANO_DE_TAREFAS.md) |
+| Plano | [PLANO_DE_TAREFAS.md](PLANO_DE_TAREFAS.md) |
+| Decisoes | [docs/decisoes_dados.md](docs/decisoes_dados.md) |
 
 ## 1. Objetivo
 
-Prever o volume de trafego de uma praca de pedagio no mes seguinte (t+1) usando a evolucao
-temporal de multiplos atributos de entrada (serie temporal multivariada). O objetivo secundario
-e comparar as familias recorrentes **SimpleRNN, GRU e LSTM** sob condicoes experimentais
-equivalentes, relacionando desempenho, capacidade e custo computacional.
+Prever o volume de trafego de uma praca de pedagio no mes seguinte (t+1) a partir da evolucao
+temporal de multiplos atributos de entrada. O objetivo secundario e comparar **SimpleRNN, GRU e
+LSTM** sob condicoes equivalentes (desempenho x capacidade x custo computacional).
 
-## 2. Fonte dos dados
+## 2. Dados
 
-- **Conjunto:** ANTT - Volume de Trafego nas Pracas de Pedagio
-- **Portal:** Portal Brasileiro de Dados Abertos (dados.gov.br)
-- **Recorte:** 3 arquivos anuais - 2024, 2025 e 2026 (aprox. 300 MB cada), unificados em uma
-  unica serie continua.
-- Os arquivos **nao** ficam versionados no Git. A origem (URL), a data de download e o
-  **SHA-256** de cada arquivo sao registrados por `download_data.py` para reprodutibilidade.
-
-## 3. Onde os dados ficam
-
-Copia compartilhada entre os integrantes: **Google Drive** (pasta compartilhada).
-Os arquivos originais sao obtidos pelos links abaixo; o download e automatizado por
-`download_data.py`, que registra URL, data de download e SHA-256 (reprodutibilidade).
+- **Fonte:** ANTT - Volume de Trafego nas Pracas de Pedagio (dados.gov.br).
+- **Recorte:** 3 arquivos anuais - 2024, 2025 e 2026 (~300 MB cada), unificados numa serie continua.
+- **Copia compartilhada:** Google Drive (links abaixo). Os arquivos **nao** entram no Git.
+- `download_data.py` baixa os arquivos e registra URL, data de download e **SHA-256** (reprodutibilidade).
 
 | Ano | Link (Google Drive) |
 |---|---|
@@ -39,84 +31,59 @@ Os arquivos originais sao obtidos pelos links abaixo; o download e automatizado 
 | 2025 | https://drive.google.com/file/d/1hDvgQXU4UvhpE3dfSUxx72fO3Phter3t/view |
 | 2026 | https://drive.google.com/file/d/1ej0hH6aIV3HvMaoDd9jXfSZJd2hF8lzw/view |
 
-Caminhos locais esperados:
+Caminhos locais (fora do Git): `data/raw/*.csv` (originais) e `data/trafego_pedagio.parquet` (derivado).
 
-```text
-data/raw/                 arquivos originais (csv) - ignorados pelo Git
-data/trafego_pedagio.parquet   dataset derivado, ja harmonizado - ignorado pelo Git
-```
+## 3. Ambiente
 
-## 4. Ambiente e instalacao
-
-- **Python:** 3.11+ recomendado. O TensorFlow pode nao publicar wheel para toda versao do
-  Python; se o `pip install` falhar (ex.: no Python 3.13), crie o venv com uma versao suportada:
-  `py -3.12 -m venv .venv`.
-- As dependencias ficam em `requirements.txt` (framework: **TensorFlow/Keras**).
+Requer **Python 3.11+**. Se o TensorFlow nao tiver wheel para a sua versao, crie o venv com uma
+suportada (ex.: `py -3.12 -m venv .venv`).
 
 ```bash
-# 1. criar o ambiente virtual
 python -m venv .venv
-
-# 2. ativar (use o comando do SEU terminal)
-#    PowerShell:
-.\.venv\Scripts\Activate.ps1
-#    CMD:
-.venv\Scripts\activate.bat
-#    Git Bash (Windows):
-source .venv/Scripts/activate
-#    Linux / macOS:
-source .venv/bin/activate
-
-# 3. atualizar o pip e instalar as dependencias
+.\.venv\Scripts\Activate.ps1    # PowerShell (CMD: .venv\Scripts\activate.bat | Linux/macOS: source .venv/bin/activate)
 python -m pip install --upgrade pip
 pip install -r requirements.txt
-
-# 4. verificar a instalacao
-python -c "import tensorflow as tf; print('TF', tf.__version__)"
-
-# 5. (opcional) registrar as versoes exatas do ambiente testado
-pip freeze > requirements.lock.txt
+python -c "import tensorflow as tf; print('TF', tf.__version__)"   # verificacao (WARNING nao e erro)
 ```
 
-> Apos ativar, o prompt exibe `(.venv)`. Para sair, use `deactivate`.
-> No VS Code, selecione o interpretador em `Ctrl+Shift+P` > "Python: Select Interpreter" >
-> escolha o que aponta para `.venv`.
+Registro exato do ambiente testado: `requirements.lock.txt`. No VS Code, selecione o interpretador
+de `.venv` (`Ctrl+Shift+P` > "Python: Select Interpreter"); as extensoes recomendadas (**Python**,
+**Pylance**, **Jupyter**) sao oferecidas ao abrir a pasta (`.vscode/extensions.json`).
 
-> **Extensoes do VS Code:** o projeto versiona `.vscode/extensions.json` com as extensoes
-> recomendadas (**Python**, **Pylance** e **Jupyter**). Ao abrir a pasta no VS Code, aceite o
-> aviso "This workspace has extension recommendations" para instala-las de uma vez. A extensao
-> **Jupyter** e necessaria para rodar os notebooks em `notebooks/` (abrir o `.ipynb`, escolher o
-> kernel que aponta para `.venv` e executar as celulas com `Shift+Enter`).
+### nbstripout: notebooks sem saida no Git
 
-## 5. Estrutura do repositorio
+O repositorio versiona notebooks **sem as saidas**. O arquivo no seu disco **mantem** as saidas; o
+Git recebe apenas a versao limpa. Depois de instalar as dependencias, rode **uma vez por maquina**:
+
+```bash
+nbstripout --install --attributes .gitattributes
+nbstripout --status    # confirma que instalou
+```
+
+- Sem esse passo, o `git add` de qualquer `.ipynb` **falha** (o filtro e obrigatorio).
+- Para limpar um notebook **ja commitado**: `git add --renormalize notebooks/arquivo.ipynb`.
+
+## 4. Estrutura
 
 ```text
-data/            dados brutos e derivados (fora do Git)
-notebooks/       exploracao e analises (EDA)
-src/             preprocess.py, dataset.py, model.py, train.py, optuna_search.py
-results/         tabelas, figuras e export da busca do Optuna
-report/          relatorio tecnico
-docs/            enunciado, material de apoio e registro de decisoes
-download_data.py  registrar origem, data e SHA-256 dos arquivos
-requirements.txt  dependencias do projeto
-README.md         este arquivo
+data/             dados brutos e derivados (fora do Git)
+notebooks/        exploracao e analises (EDA)
+src/              preprocess.py, dataset.py, model.py, train.py, optuna_search.py
+results/          tabelas, figuras e export da busca do Optuna
+report/           relatorio tecnico
+docs/             enunciado, material de apoio e registro de decisoes
+download_data.py  download + manifesto (URL, data, SHA-256)
 ```
 
-## 6. Convencoes do projeto
+## 5. Convencoes
 
-- **Seed global:** `GLOBAL_SEED = 42`. Toda inicializacao de pesos, embaralhamento e amostragem
-  deve usar essa seed, para que os experimentos sejam reproduziveis.
-- **Dados e artefatos gerados NAO entram no Git** (ver `.gitignore`): dados, modelos treinados
-  e o banco cru do Optuna. O que versionamos sao os **exports legiveis** em `results/`.
-- **Sem embaralhamento (shuffle)** em nenhuma etapa que envolva a ordem temporal.
+- **Seed global:** `GLOBAL_SEED = 42` em toda inicializacao, embaralhamento e amostragem.
+- **Sem shuffle** em qualquer etapa que envolva a ordem temporal.
+- **Dados e artefatos gerados nao entram no Git** (ver `.gitignore`); versionamos exports legiveis em `results/`.
+- **Pre-processamento ajustado somente no treino** e aplicado em validacao/teste.
 - **ASCII puro** em arquivos de configuracao e documentacao.
-- Transformacoes de pre-processamento sao ajustadas **somente no treino** e aplicadas em
-  validacao e teste.
 
-## 7. Status
+## 6. Status
 
-Acompanhe o andamento pelas fases F0-F8 no [PLANO_DE_TAREFAS.md](PLANO_DE_TAREFAS.md).
-Desvios de planejamento devem ser registrados aqui.
-
-As decisoes sobre os dados (encoding, separador, alvo, categorias, etc.) ficam registradas em
-[docs/decisoes_dados.md](docs/decisoes_dados.md).
+Acompanhe as fases F0-F8 em [PLANO_DE_TAREFAS.md](PLANO_DE_TAREFAS.md). Decisoes sobre os dados
+ficam em [docs/decisoes_dados.md](docs/decisoes_dados.md). Desvios de planejamento sao registrados aqui.
