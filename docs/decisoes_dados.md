@@ -87,11 +87,23 @@ Convencoes:
 - Impacto: alvo passa a ser t+1 em dias; janelas redefinidas em dias; exige features de calendario
   (dia da semana, mes, feriado). Atualiza PLANO (F2/F5/F6) e README.
 
+## D-008 - Duplicatas com chave repetida (dentro de 2025)
+
+- Data: 2026-10-06
+- Decisao: manter as linhas e **somar o `volume_total`** das chaves repetidas na agregacao por
+  praca/dia (a unidade final ja agrega somando).
+- Evidencia: nao ha duplicata entre arquivos (cada arquivo traz apenas datas do proprio ano:
+  2024 -> 2024, 2025 -> 2025, 2026 -> 2026). Ha 4.853 chaves repetidas dentro de 2025 (0,15%),
+  todas em jan-mar/2025; 59 sao linhas exatas e as demais tem mesma chave com volume diferente.
+  2024 e 2026 nao tem duplicatas.
+- Alternativas: remover as linhas repetidas (perderia volume, sem base para escolher qual manter);
+  manter cru sem decidir (infla o total se agregado de outro jeito).
+- Impacto: como a unidade final agrega (soma) por praca/dia, somar os duplicados e o comportamento
+  natural. Limite: assume-se que as linhas repetidas sao medidas distintas, nao erro de exportacao
+  (concentracao em Q1/2025, junto do drift da D-006).
+
 ---
 
-## Pendente
+## Contagem de linhas
 
-- D-008 (a verificar) - Duplicatas na virada de ano: o mesmo registro pode aparecer em dois
-  arquivos (ex.: dezembro/2024 no arquivo de 2024 e no de 2025). Verificar antes de considerar a
-  unificacao concluida.
-- Contagem de linhas: 2024 = 3.312.763 | 2025 = 3.274.157 | 2026 = 2.597.234 (total 9.184.154).
+- 2024 = 3.312.763 | 2025 = 3.274.157 | 2026 = 2.597.234 (total 9.184.154).

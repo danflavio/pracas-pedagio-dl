@@ -65,9 +65,9 @@ Legenda de responsaveis: **A** = Daniel Flavio - **B** = Guilherme Martins - **A
 - [x] 27/09 - **B** - Auditar **schema de cada ano**: nomes/ordem das colunas, encoding (UTF-8 BOM?), separador (`;`), decimal com virgula (`"135,00"`)
 - [x] 27/09 - **B** - Checar **deriva de schema entre anos** (colunas que aparecem/somem, valores novos em `sentido`, `tipo_cobranca`, `tipo_de_veiculo`)
 - [x] 28/09 - **A** - Concatenar os 3 anos em um unico DataFrame com coluna `ano_origem` (rastreabilidade)
-- [ ] 05/10 - **A+B** - Investigar `categoria_eixo` com tipos misturados (DtypeWarning) e definir o tipo antes do Parquet (ver `docs/decisoes_dados.md`, D-006)
+- [x] 05/10 - **A+B** - Investigar `categoria_eixo` com tipos misturados (DtypeWarning) e definir o tipo antes do Parquet (ver `docs/decisoes_dados.md`, D-006)
 - [ ] 28/09 - **A** - Converter para **Parquet** (`data/trafego_pedagio.parquet`) - reduz muito o tamanho e acelera o carregamento
-- [ ] 28/09 - **B** - Checar duplicatas (mesma praca/mes/categoria em dois arquivos na virada de ano)
+- [x] 28/09 - **B** - Checar duplicatas (sem duplicatas entre arquivos; 4.853 chaves repetidas dentro de 2025, somadas na agregacao - ver D-008)
 
 **Pronto quando:** um unico dataset em Parquet, com schema harmonizado, somas conferidas contra o total esperado de cada ano.
 
@@ -93,6 +93,7 @@ Legenda de responsaveis: **A** = Daniel Flavio - **B** = Guilherme Martins - **A
 ### F3 - Pre-processamento e janelamento - 01-04/10
 
 - [ ] 01/10 - **A** - Agregar/pivotar para o formato multivariado: uma linha por `praca x dia`, colunas = canais de volume (ex.: total, passeio, comercial, moto, share comercial)
+- [ ] 01/10 - **A** - Criar **features de calendario** (dia da semana, mes, feriado) - consequencia da granularidade diaria (ver D-007)
 - [ ] 01/10 - **B** - Codificacao de variaveis categoricas (one-hot ou embeddings - justificar a escolha)
 - [ ] 02/10 - **A** - **Padronizacao/normalizacao fitada SOMENTE no treino** e aplicada em val/teste (salvar os parametros do scaler)
 - [ ] 02/10 - **B** - Construir **janelas (sliding windows)** respeitando a ordem temporal; definir `X` (janela x canais) e `y` (t+1) e documentar as **dimensoes de entrada/saida**
