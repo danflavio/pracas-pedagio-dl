@@ -197,7 +197,7 @@ Legenda de responsaveis: **A** = Daniel Flavio - **B** = Guilherme Martins - **A
 
 ## 4. Riscos e armadilhas (checar antes de cada fase)
 
-- [ ] **Vazamento de dados:** scaler/encoder fitados so no treino; nenhum canal pode conter o alvo do mes t+1
+- [ ] **Vazamento de dados:** scaler/encoder fitados so no treino; nenhum canal pode conter o alvo do dia t+1
 - [ ] **Serie curta (~33 meses):** validar com janelas de tamanhos diferentes; majoritariamente modelo global (pooling de pracas)
 - [ ] **Sem shuffle** em nenhum passo da serie temporal
 - [ ] **Zero-inflacao** e pracas com historico curto: decisao explicita e justificada
