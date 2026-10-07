@@ -87,3 +87,11 @@ download_data.py  download + manifesto (URL, data, SHA-256)
 
 Acompanhe as fases F0-F8 em [PLANO_DE_TAREFAS.md](PLANO_DE_TAREFAS.md). Decisoes sobre os dados
 ficam em [docs/decisoes_dados.md](docs/decisoes_dados.md). Desvios de planejamento sao registrados aqui.
+
+- **2026-10-06 - F0 e F1 concluidas.** Proximo: **F2** (EDA e definicao do problema).
+- F1 gerou `data/trafego_pedagio.parquet` (9.184.154 linhas, ~20 MB) via `src/preprocess.py`.
+- Achados da F1: encoding **Latin-1**; `mes_ano` e **diario, nao mensal**; drift em
+  `categoria_eixo` (codigo vs rotulo em Q1/2025) e 4.853 chaves repetidas em Q1/2025 (somadas na
+  agregacao). Ver D-001..D-008 em `docs/decisoes_dados.md`.
+- Pendencia operacional: apos clonar/puxar, cada integrante roda
+  `nbstripout --install --attributes .gitattributes` (ver secao 3).
