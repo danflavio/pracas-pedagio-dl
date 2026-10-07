@@ -66,7 +66,7 @@ Legenda de responsaveis: **A** = Daniel Flavio - **B** = Guilherme Martins - **A
 - [x] 27/09 - **B** - Checar **deriva de schema entre anos** (colunas que aparecem/somem, valores novos em `sentido`, `tipo_cobranca`, `tipo_de_veiculo`)
 - [x] 28/09 - **A** - Concatenar os 3 anos em um unico DataFrame com coluna `ano_origem` (rastreabilidade)
 - [x] 05/10 - **A+B** - Investigar `categoria_eixo` com tipos misturados (DtypeWarning) e definir o tipo antes do Parquet (ver `docs/decisoes_dados.md`, D-006)
-- [ ] 28/09 - **A** - Converter para **Parquet** (`data/trafego_pedagio.parquet`) - reduz muito o tamanho e acelera o carregamento
+- [x] 28/09 - **A** - Converter para **Parquet** (`data/trafego_pedagio.parquet`) - reduz muito o tamanho e acelera o carregamento
 - [x] 28/09 - **B** - Checar duplicatas (sem duplicatas entre arquivos; 4.853 chaves repetidas dentro de 2025, somadas na agregacao - ver D-008)
 
 **Pronto quando:** um unico dataset em Parquet, com schema harmonizado, somas conferidas contra o total esperado de cada ano.
