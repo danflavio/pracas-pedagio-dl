@@ -14,7 +14,7 @@ Trabalho Pratico da disciplina de Deep Learning - serie temporal multivariada.
 
 ## 1. Objetivo
 
-Prever o volume de trafego de uma praca de pedagio no mes seguinte (t+1) a partir da evolucao
+Prever o volume de trafego de uma praca de pedagio no dia seguinte (t+1) a partir da evolucao
 temporal de multiplos atributos de entrada. O objetivo secundario e comparar **SimpleRNN, GRU e
 LSTM** sob condicoes equivalentes (desempenho x capacidade x custo computacional).
 

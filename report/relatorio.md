@@ -27,7 +27,7 @@ Portal Brasileiro de Dados Abertos. Juntamos três arquivos anuais em uma série
 |---|---|
 | Período | 2024-01-01 a 2026-08-31 (974 dias) |
 | Linhas no arquivo original | 9.184.154 |
-| Praças (concessionária + praça) | 345 |
+| Praças (concessionária + praça) | 345 no arquivo; **303** com histórico ≥ 180 dias entram no modelo (D-010) |
 | Concessionárias | 43 |
 
 Dois detalhes dos dados mudaram o rumo do trabalho:
@@ -54,7 +54,8 @@ Cada praça vira uma sequência de dias. Para cada dia, o modelo recebe **13 sin
 - **4 de volume:** carros de passeio, comerciais, motos e o total;
 - **9 de calendário:** dia da semana e época do ano.
 
-O modelo olha uma **janela de N dias** e responde com **um número**: o total do dia seguinte.
+O modelo olha uma **janela de N dias** e responde com **um número**: o total do dia seguinte. Todos
+os canais de volume estão em **veículos por dia**, e o alvo na mesma unidade.
 
 | Etapa | Formato |
 |---|---|
@@ -87,7 +88,9 @@ não prova nada sozinho. Um modelo só tem valor se **bater essas duas réguas**
 
 ### 5.1 Comparando as três arquiteturas
 
-Sob a mesma configuração (mesmos dados, mesma janela, mesma semente), com os dados completos:
+Para isolar o efeito da célula recorrente, fixamos a **mesma receita** para as três e mudamos
+**somente a célula** (mesmos dados, mesma janela, mesma semente). A receita usada é a **vencedora da
+busca** (unidades = 54), o que faz desta uma comparação controlada:
 
 | Arquitetura | MAE | RMSE | Parâmetros | Tempo de treino |
 |---|---|---|---|---|
@@ -112,9 +115,11 @@ o que, na prática, é um resultado relevante: mais complexidade não trouxe gan
 | 64 | 5.057 | 1.598 | 4 min | 0,10 ms |
 | **128** | 18.305 | **1.514** | 7 min | 0,12 ms |
 
-Janelas mais longas ajudam. Duas camadas batem uma — a terceira não acrescenta. E mais unidades
-melhoram o erro, mas o custo cresce **desproporcional**: 12 vezes mais parâmetros para ganhar
-cerca de 12% de MAE.
+**Dentro desta receita controlada**, janelas mais longas ajudam, duas camadas rendem mais que uma (a
+terceira não acrescenta) e mais unidades reduzem o erro — mas com custo crescente: 12 vezes mais
+parâmetros para cerca de 12% de MAE. São **tendências relativas dentro da receita da busca**; não
+são os números do modelo final. A receita de referência (1 camada, 64 unidades) teve MAE **melhor
+que todas** estas variantes (ver 5.4).
 
 ### 5.3 Uma observação importante sobre a busca
 
@@ -124,9 +129,15 @@ configuração de referência do piloto (**1.108**). Isso mostra, com evidência
 da busca foi pequeno demais** (sem GPU). Por isso o modelo final usa a configuração de
 referência, e não a da busca.
 
+**Resumindo a diferença:** as tabelas 5.1 e 5.2 vêm da **receita da busca** (unidades 54, rmsprop);
+a avaliação final (5.4) usa a **receita de referência** (unidades 64, adam). Por isso os valores
+**não são diretamente comparáveis** entre si — cada bloco responde a uma pergunta diferente
+(comparar famílias vs. medir o desempenho final).
+
 ### 5.4 Avaliação final no teste
 
-Depois de escolher a configuração, o teste foi usado **uma única vez**, sem ajustar nada depois.
+Depois de escolher a configuração (**GRU, janela 30, 1 camada, 64 unidades, Adam**), o teste foi
+usado **uma única vez**, sem ajustar nada depois.
 
 **Cenário 1 — continuar a série da mesma praça** (divisão por data):
 
@@ -151,6 +162,15 @@ por dia, então um erro de 1.126 equivale a aproximadamente **8%** do movimento 
 A vantagem cai em praças novas — o que faz sentido: prever uma praça que o modelo **nunca viu** é
 mais difícil do que continuar a série de uma praça conhecida.
 
+### 5.5 O que as curvas mostram
+
+As curvas de treino/validação (`results/figures/curva_*.png`) caem **juntas** nas primeiras épocas
+e depois a **validação estabiliza**, enquanto o treino continua caindo. Surge então um **gap
+crescente** entre as duas (treino bem abaixo da validação): é **overfitting leve**, não subajuste.
+Quem contém isso é o **early stopping** com `restore_best_weights`, que guarda o ponto de menor
+erro de validação e descarta as épocas seguintes. Não foi preciso regularização mais forte
+(dropout) nessa receita.
+
 ## 6. Limitações e conclusão
 
 **Limitações (declaradas de propósito, não escondidas):**
@@ -160,14 +180,16 @@ mais difícil do que continuar a série de uma praça conhecida.
 - **Sem validação cruzada** (era opcional). Não medimos a variância dos resultados.
 - **Só prevemos 1 dia à frente.** Não testamos t+2 nem t+3.
 - **Buraco de série é descartado**, então usamos um pouco menos de dados do que existe.
+- **Dias atípicos** (feriados, eventos) são onde o erro tende a ser maior: o modelo aprende o padrão
+  semanal, mas não "sabe" que um dia é feriado.
 
 **Conclusão:** as redes recorrentes funcionaram. Reduziram o erro em cerca de **27%** ao continuar a
 série de uma praça e **17%** em praças novas, sempre batendo a régua mais forte.
 
 O achado mais interessante, porém, **não foi a arquitetura vencedora**. As três famílias
 empataram na prática, e o SimpleRNN entregou quase o mesmo resultado com **um terço dos
-parâmetros**. O ganho real veio de decisões sobre os dados — janela de 30 dias e duas camadas —
-e não da escolha da célula.
+parâmetros**. O ganho mais consistente veio de decisões sobre os dados — sobretudo a **janela de 30
+dias** — e não da escolha da célula.
 
 Uma última observação, que só aparece porque testamos: a configuração vencedora da busca de
 parâmetros rendeu **pior** que a configuração de referência quando retreinada com os dados
