@@ -15,6 +15,11 @@ Prever **quantos veículos** vão passar em uma praça de pedágio **no dia segu
 próximo dia. Não é classificar nem agrupar — é prever um número. Por isso a tarefa é de
 **regressão**.
 
+**Unidade de observação:** uma **(concessionária, praça, dia)**. **Variável alvo:** o total de
+veículos que passam na praça no dia seguinte, em **veículos por dia**. **Utilidade da previsão:**
+apoiar o planejamento da operação — dimensionar cabines e equipes, estimar arrecadação e antecipar a
+demanda em feriados.
+
 Queremos também comparar três tipos de rede recorrente — **SimpleRNN, GRU e LSTM** — para
 ver qual funciona melhor e quanto cada uma custa.
 
