@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pipeline do trabalho — do dado bruto à entrega</title>
+<style>
+  :root{
+    --verde:#0E7A3C;
+    --verde-forte:#0A4B26;
+    --verde-claro:#BFE3CC;
+    --texto:#1A231E;
+    --suave:#6C7A72;
+    --vermelho:#C8102E;
+    --esc:1;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;background:#0C1712;
+    font-family:"Segoe UI",Calibri,Arial,sans-serif;color:var(--texto);-webkit-font-smoothing:antialiased}
+  .stage{position:absolute;top:50%;left:50%;width:1280px;height:720px;
+    transform:translate(-50%,-50%) scale(var(--esc));background:#fff;overflow:hidden}
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;
+    padding:48px 76px 64px;background:#fff}
+  .slide.active{display:flex}
+  .top{display:flex;justify-content:space-between;align-items:center;gap:28px}
+  .kicker{font-size:18px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--verde)}
+  .mark{height:38px;width:auto}
+  h1{font-family:Cambria,Georgia,serif;font-size:60px;line-height:1.08;font-weight:700}
+  h2{font-family:Cambria,Georgia,serif;font-size:44px;line-height:1.1;font-weight:700;margin-top:2px}
+  h3{font-family:Cambria,Georgia,serif;font-size:27px;font-weight:700;color:var(--verde-forte);margin-bottom:8px}
+  .lead{font-size:25px;line-height:1.42;color:#33413A}
+  .content{flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px;margin-top:6px}
+  .denso{font-size:21px;line-height:1.38;color:#3A4740}
+  .duas{display:flex;gap:46px}
+  .duas .col{flex:1}
+  ul.lista{list-style:none}
+  ul.lista li{position:relative;padding-left:24px;margin:7px 0}
+  ul.lista li::before{content:"";position:absolute;left:4px;top:.52em;width:8px;height:8px;
+    border-radius:50%;background:var(--verde)}
+  ul.lista li b{color:var(--verde-forte)}
+  .pipe{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+  .etapa{border:2px solid #D8E7DE;border-radius:14px;padding:11px 14px}
+  .etapa .id{font-family:Cambria,Georgia,serif;font-size:23px;font-weight:700;color:var(--verde)}
+  .etapa h4{font-size:19px;font-family:Cambria,Georgia,serif;margin:1px 0 3px;color:var(--verde-forte)}
+  .etapa p{font-size:16px;line-height:1.28;color:#4A574F}
+  .fluxo{display:flex;align-items:center;gap:14px;font-size:20px;flex-wrap:wrap}
+  .caixa{border:2px solid #D8E7DE;border-radius:14px;padding:12px 18px;line-height:1.3}
+  .caixa.alvo{border-color:var(--verde);background:var(--verde);color:#fff}
+  .seta{color:var(--verde);font-size:26px;font-weight:700}
+  table{border-collapse:collapse;font-size:21px;width:100%}
+  th,td{padding:9px 12px;text-align:left;border-bottom:1px solid #E1EAE4}
+  th{font-size:16px;text-transform:uppercase;letter-spacing:.06em;color:var(--suave);font-weight:700}
+  .melhor{color:var(--verde);font-weight:700}
+  code{background:#F2F7F4;border-radius:6px;padding:1px 6px;font-family:"Consolas",monospace;font-size:.92em}
+  pre{background:#0E1A14;color:#D8EADF;border-radius:12px;padding:14px 18px;font-family:"Consolas",monospace;
+    font-size:18px;line-height:1.42}
+  .card{border:2px solid #E1EAE4;border-radius:14px;padding:14px 18px}
+  .tag{display:inline-block;background:var(--vermelho);color:#fff;font-size:16px;font-weight:700;
+    padding:4px 12px;border-radius:999px;margin-right:10px;vertical-align:2px}
+  .pe{position:absolute;left:76px;right:76px;bottom:20px;display:flex;
+    justify-content:space-between;font-size:15px;color:#8B978F}
+  @media print{
+    html,body{overflow:visible;background:#fff}
+    body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .stage{position:static;transform:none;width:1280px;height:auto;top:auto;left:auto}
+    .slide{position:relative;display:flex!important;width:1280px;height:720px;
+      page-break-after:always;break-after:page}
+    .slide:last-child{page-break-after:auto;break-after:auto}
+    @page{size:338.67mm 190.5mm;margin:0}
+  }
+</style>
+</head>
+<body>
+<div class="stage" id="deck">
+
+  <!-- 1 · CAPA -->
+  <section class="slide active">
+    <div class="content" style="justify-content:center;gap:0">
+      <div class="kicker" style="font-size:22px">Pipeline do trabalho</div>
+      <h1 style="margin-top:14px">Do dado bruto à entrega</h1>
+      <p class="lead" style="margin-top:22px">O passo a passo do que foi feito, fase por fase — F0 a F8.</p>
+      <p class="denso suave" style="margin-top:44px">
+        Previsão de volume de tráfego em praças de pedágio · Frente 3.2 (redes recorrentes)<br>
+        Daniel Flavio e Guilherme Martins · Deep Learning · Instituto Federal de Goiás · Outubro de 2026
+      </p>
+    </div>
+  </section>
+
+  <!-- 2 · VISÃO GERAL -->
+  <section class="slide">
+    <div class="top"><div><div class="kicker">Visão geral</div><h2>O caminho completo, em 8 etapas</h2></div><img class="mark" src="../report/assets/logo-ifg-mark.png" alt="IFG"></div>
+    <div class="content">
+      <div class="pipe">
+        <div class="etapa"><div class="id">F0</div><h4>Setup</h4><p>Repositório, ambiente, seed e onde ficam os dados.</p></div>
+        <div class="etapa"><div class="id">F1</div><h4>Aquisição + auditoria</h4><p>Baixar os 3 CSVs, auditar e unir em Parquet.</p></div>
+        <div class="etapa"><div class="id">F2</div><h4>Análise exploratória</h4><p>Entender os dados e definir o problema e o alvo.</p></div>
+        <div class="etapa"><div class="id">F3</div><h4>Pré-processamento</h4><p>Agregar, criar janelas e dividir treino/val/teste.</p></div>
+        <div class="etapa"><div class="id">F4</div><h4>Baselines + redes</h4><p>Régua e as três famílias recorrentes treinando.</p></div>
+        <div class="etapa"><div class="id">F5</div><h4>Optuna</h4><p>Busca de hiperparâmetros com métrica na validação.</p></div>
+        <div class="etapa"><div class="id">F6</div><h4>Experimentos</h4><p>Tudo o que a frente 3.2 exige, com tabelas e gráficos.</p></div>
+        <div class="etapa"><div class="id">F7</div><h4>Avaliação no teste</h4><p>Medir uma única vez, no futuro nunca visto.</p></div>
+        <div class="etapa"><div class="id">F8</div><h4>Entrega</h4><p>Relatório, slides e revisão final.</p></div>
+      </div>
+      <p class="lead" style="margin-top:4px">Cada etapa produz um artefato e, quando muda uma decisão, entra no <code>docs/decisoes_dados.md</code> (D-001 a D-015).</p>
+    </div>
+    <div class="pe"><span>Pipeline</span><span>2 / 12</span></div>
+  </section>
+
+  <!-- 3 · F0 + F1 -->
+  <section class="slide">
+    <div class="top"><div><div class="kicker">F0 · Setup &nbsp;|&nbsp; F1 · Aquisição e auditoria</div><h2>Preparar e conhecer os dados</h2></div><img class="mark" src="../report/assets/logo-ifg-mark.png" alt="IFG"></div>
+    <div class="content">
+      <div class="duas">
+        <div class="col">
+          <h3>F0 — Setup (25–26/09)</h3>
+          <ul class="lista denso">
+            <li>Repositório no <b>GitHub</b> da dupla</li>
+            <li><code>.gitignore</code>: dados e artefatos <b>fora do Git</b></li>
+            <li><code>requirements.txt</code>: TensorFlow/Keras, pandas, Optuna</li>
+            <li><b>Seed global = 42</b> (reprodutibilidade)</li>
+            <li>Dados no <b>Google Drive</b> compartilhado</li>
+          </ul>
+        </div>
+        <div class="col">
+          <h3>F1 — Aquisição + auditoria (26/09–06/10)</h3>
+          <ul class="lista denso">
+            <li><code>download_data.py</code>: baixa e registra URL, data e <b>SHA-256</b></li>
+            <li>Auditar os 3 CSVs revelou <b>3 surpresas</b>:
+              <ul class="lista" style="margin-top:2px">
+                <li>encoding <b>Latin-1</b> (não UTF-8)</li>
+                <li><code>mes_ano</code> era, na verdade, <b>diário</b> (não mensal)</li>
+                <li><code>categoria_eixo</code> com drift + <b>4.853</b> chaves repetidas (Q1/2025)</li>
+              </ul>
+            </li>
+            <li>União dos 3 anos: <b>9.184.154</b> linhas</li>
+            <li>Salvo em <b>Parquet</b>: ~20 MB (contra 854 MB de CSV)</li>
+          </ul>
+        </div>
+      </div>
+      <p class="lead"><b>Decisões registradas: D-001 a D-008.</b> Nenhuma surpresa quebraria tudo depois — foi pega na auditoria.</p>
+    </div>
+    <div class="pe"><span>Fonte: ANTT / dados.gov.br</span><span>3 / 12</span></div>
+  </section>
+
+  <!-- 4 · F2 -->
+  <section class="slide">
+    <div class="top"><div><div class="kicker">F2 · Análise exploratória</div><h2>Entender os dados e definir o problema</h2></div><img class="mark" src="../report/assets/logo-ifg-mark.png" alt="IFG"></div>
+    <div class="content">
+      <div class="duas">
+        <div class="col">
+          <ul class="lista denso">
+            <li>Período: <b>2024-01-01 a 2026-08-31</b> (974 dias)</li>
+            <li><b>345</b> praças e <b>43</b> concessionárias; <b>303</b> com ≥ 180 dias (D-010)</li>
+            <li>Alvo: <b>total de veículos no dia t+1</b>; unidade = (concessionária, praça, dia) (D-009)</li>
+            <li>Distribuição do alvo: <b>skew 14,9</b>, cauda longa e <b>sem zeros</b></li>
+            <li>Série <b>descontínua</b>: só 47 praças cobrem os 974 dias</li>
+          </ul>
+        </div>
+        <div class="col">
+          <ul class="lista denso">
+            <li>Anomalias: critério <b>IQR por praça</b> (3× o IQR) e decisão de <b>manter</b> — 2,09% dos dias, 2,59% do volume (D-015)</li>
+            <li>Os maiores casos são reais: <b>Reveillon</b> numa rodovia do litoral</li>
+            <li>4 figuras em <code>results/figures/</code> (série, histograma, dia da semana, heatmap)</li>
+          </ul>
+          <p class="denso" style="margin-top:10px">Decisões <b>D-009 a D-015</b>.</p>
+        </div>
+      </div>
+      <div class="fluxo" style="justify-content:center;margin-top:4px">
+        <div class="caixa">dias anteriores (13 sinais)</div>
+        <span class="seta">&rarr;</span>
+        <div class="caixa alvo">total do dia seguinte</div>
+        <span class="seta">&rarr;</span>
+        <div class="caixa">1 número (regressão)</div>
+      </div>
+    </div>
+    <div class="pe"><span>EDA e definição do problema</span><span>4 / 12</span></div>
+  </section>
+
+  <!-- 5 · F3 -->
+  <section class="slide">
+    <div class="top"><div><div class="kicker">F3 · Pré-processamento</div><h2>Da tabela para a janela da rede</h2></div><img class="mark" src="../report/assets/logo-ifg-mark.png" alt="IFG"></div>
+    <div class="content">
+      <div class="duas">
+        <div class="col">
+          <h3>Montagem</h3>
+          <ul class="lista denso">
+            <li>Série <code>praça × dia</code> (180.737 linhas)</li>
+            <li><b>13 sinais</b>: 4 de volume (Passeio, Comercial, Moto, Total) + 9 de calendário</li>
+            <li><b>Janelas</b>: X = janela × 13 &nbsp;→&nbsp; y = Total do dia seguinte</li>
+            <li>Janela só vale se <b>todos os dias existem</b> (D-011)</li>
+            <li>Tipo ausente em dia observado = <b>0</b> (D-012)</li>
+          </ul>
+        </div>
+        <div class="col">
+          <h3>Divisão e cuidado</h3>
+          <ul class="lista denso">
+            <li><b>Split 1 — cronológico</b>: treino ≤ 2025-11-30 · val até 2026-04-30 · teste depois (D-013)</li>
+            <li><b>Split 2 — por grupos</b>: 70/15/15 praças, seed 42</li>
+            <li>Padronização ajustada <b>só no treino</b> (D-014)</li>
+            <li>Testes de <b>vazamento temporal</b> passando</li>
+          </ul>
+        </div>
+      </div>
+      <div class="fluxo" style="justify-content:center">
+        <div class="caixa">Parquet</div><span class="seta">&rarr;</span>
+        <div class="caixa">pivô por dia</div><span class="seta">&rarr;</span>
+        <div class="caixa">janelas</div><span class="seta">&rarr;</span>
+        <div class="caixa">treino / val / teste</div><span class="seta">&rarr;</span>
+        <div class="caixa alvo">normalizado (só treino)</div>
+      </div>
+    </div>
+    <div class="pe"><span>src/dataset.py</span><span>5 / 12</span></div>
+  </section>
+
+  <!-- 6 · F4 -->
+  <section class="slide">
+    <div class="top"><div><div class="kicker">F4 · Modelagem</div><h2>A régua e as três arquiteturas</h2></div><img class="mark" src="../report/assets/logo-ifg-mark.png" alt="IFG"></div>
+    <div class="content">
+      <div class="duas">
+        <div class="col">
+          <h3>Baselines (régua obrigatória)</h3>
+          <ul class="lista denso">
+            <li><b>Persistência</b>: amanhã = hoje</li>
+            <li><b>Média móvel</b>: média da janela</li>
+            <li>Um modelo só tem valor se <b>bater essa régua</b></li>
+          </ul>
+        </div>
+        <div class="col">
+          <h3>Config de referência</h3>
+          <ul class="lista denso">
+            <li>GRU · janela 30 · 1 camada · 64 unidades · Adam</li>
+            <li>Early stopping + ReduceLROnPlateau + <code>clipnorm</code> + <code>shuffle=False</code></li>
+          </ul>
+        </div>
+      </div>
+      <table>
+        <tr><th>Rodada-piloto (MAE na validação)</th><th>GRU</th><th>LSTM</th><th>SimpleRNN</th></tr>
+        <tr><td>Erro médio (veículos)</td><td class="melhor">1.108</td><td>1.138</td><td>1.249</td></tr>
+      </table>
+      <p class="denso">Curvas de treino/validação salvas em <code>results/figures/curva_*.png</code>: mostram <b>overfitting leve</b>, contido pelo early stopping. <code>src/model.py</code> + <code>src/train.py</code>.</p>
+    </div>
+    <div class="pe"><span>SimpleRNN · GRU · LSTM</span><span>6 / 12</span></div>
+  </section>
+
+  <!-- 7 · F5 -->
+  <section class="slide">
+    <div class="top"><div><div class="kicker">F5 · Hiperparametrização</div><h2>Em vez de chutar, buscar com método</h2></div><img class="mark" src="../report/assets/logo-ifg-mark.png" alt="IFG"></div>
+    <div class="content">
+      <div class="duas">
+        <div class="col">
+          <ul class="lista denso">
+            <li>Ferramenta: <b>Optuna</b>, métrica = <b>RMSE na validação</b> (teste intocado)</li>
+            <li>Pruner: <b>MedianPruner</b>; storage <b>SQLite</b> (<code>data/optuna_study.db</code>)</li>
+            <li>Espaço: família · janela {7,14,30} · units 32–128 · camadas {1,2} · dropout 0–0,3 · lr · batch · otimizador</li>
+            <li><b>15 trials</b> (9 completos) em <b>13,4 min</b> — reduzido por causa da CPU</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="card" style="background:#FBF3F4;border-color:#E9C9CE">
+            <span class="tag">Ressalva honesta</span>
+            <p class="denso" style="margin-top:6px">A config <b>vencedora</b> da busca, retreinada com os dados completos, rendeu <b>pior</b> (MAE ≥ 1.493) que a referência (1.108). Por isso o <b>modelo final usa a referência</b>.</p>
+            <p class="denso" style="margin-top:6px">Isso mostra, com número, que <b>o orçamento da busca foi pequeno</b> (sem GPU).</p>
+          </div>
+          <p class="denso" style="margin-top:8px">Registro em <code>results/optuna_trials.csv</code>, <code>optuna_resumo.json</code> e <code>config_final.json</code>.</p>
+        </div>
+      </div>
+    </div>
+    <div class="pe"><span>src/optuna_search.py</span><span>7 / 12</span></div>
+  </section>
+
+  <!-- 8 · F6 -->
+  <section class="slide">
+    <div class="top"><div><div class="kicker">F6 · Experimentos da frente 3.2</div><h2>Tudo o que o enunciado pede, comparado</h2></div><img class="mark" src="../report/assets/logo-ifg-mark.png" alt="IFG"></div>
+    <div class="content">
+      <table>
+        <tr><th>Experimento</th><th>Resultado (validação)</th></tr>
+        <tr><td>Famílias (mesma receita)</td><td>GRU <b>1.537</b> · LSTM 1.550 · SimpleRNN 1.566 (MAE)</td></tr>
+        <tr><td>Janelas de tempo</td><td><b>30 dias</b> melhor (RMSE 2.725 vs 3.020 / 3.061)</td></tr>
+        <tr><td>Profundidade</td><td>2 camadas &gt; 1 (na receita controlada); a 3ª não acrescenta</td></tr>
+        <tr><td>Largura</td><td>128 unidades melhora o erro, mas com <b>12× mais parâmetros</b> para ~12% de MAE</td></tr>
+        <tr><td>Custo</td><td>nº de parâmetros, tempo de treino e <b>ms por previsão</b></td></tr>
+      </table>
+      <p class="denso">Dependências de longo prazo: janelas maiores ajudam. Estratégia: <b>1 passo à frente</b> (multi-step não implementado — limitação declarada).
+      Figuras: <code>exp_familia</code>, <code>exp_janela</code>, <code>exp_largura</code>, <code>exp_custo_parametros</code>.</p>
+    </div>
+    <div class="pe"><span>src/experimentos.py</span><span>8 / 12</span></div>
+  </section>
+
+  <!-- 9 · F7 -->
+  <section class="slide">
+    <div class="top"><div><div class="kicker">F7 · Avaliação final</div><h2>O teste usado uma única vez</h2></div><img class="mark" src="../report/assets/logo-ifg-mark.png" alt="IFG"></div>
+    <div class="content">
+      <div class="duas" style="gap:44px;align-items:flex-start">
+        <div class="col">
+          <h3>Continuar a série da mesma praça</h3>
+          <table>
+            <tr><th>Modelo</th><th>MAE</th><th>R²</th></tr>
+            <tr><td>Repetir o último dia</td><td>1.536</td><td>0,92</td></tr>
+            <tr><td>Média dos últimos dias</td><td>1.831</td><td>0,88</td></tr>
+            <tr><td class="melhor">GRU (final)</td><td class="melhor">1.126</td><td class="melhor">0,95</td></tr>
+          </table>
+        </div>
+        <div class="col">
+          <h3>Prever em praças novas</h3>
+          <table>
+            <tr><th>Modelo</th><th>MAE</th><th>R²</th></tr>
+            <tr><td>Repetir o último dia</td><td>1.774</td><td>0,92</td></tr>
+            <tr><td>Média dos últimos dias</td><td>2.028</td><td>0,89</td></tr>
+            <tr><td class="melhor">GRU (final)</td><td class="melhor">1.469</td><td class="melhor">0,94</td></tr>
+          </table>
+        </div>
+      </div>
+      <p class="lead">O modelo bate a régua nos dois cenários: <b>~27%</b> menor erro no primeiro e <b>~17%</b> no segundo. Como escala, o erro de 1.126 equivale a <b>~8%</b> do movimento diário médio.</p>
+    </div>
+    <div class="pe"><span>src/avaliar_teste.py</span><span>9 / 12</span></div>
+  </section>
+
+  <!-- 10 · F8 -->
+  <section class="slide">
+    <div class="top"><div><div class="kicker">F8 · Entrega</div><h2>Relatório, slides e revisão final</h2></div><img class="mark" src="../report/assets/logo-ifg-mark.png" alt="IFG"></div>
+    <div class="content">
+      <div class="duas">
+        <div class="col">
+          <h3>O que foi produzido</h3>
+          <ul class="lista denso">
+            <li><code>report/relatorio.md</code> — as 6 seções do PDF</li>
+            <li><code>slides/apresentacao.html</code> + <code>.pdf</code> — 14 slides, 16:9</li>
+            <li>Validação <b>requisito a requisito</b> do enunciado</li>
+          </ul>
+        </div>
+        <div class="col">
+          <h3>O que ainda falta</h3>
+          <ul class="lista denso">
+            <li><span class="tag">Pendente</span>Ensaiar e cronometrar a apresentação (<b>15 min</b>)</li>
+            <li><span class="tag">Pendente</span>Deixar o <b>link do GitHub público</b> para o professor</li>
+          </ul>
+        </div>
+      </div>
+      <p class="lead">Praticamente todos os requisitos formais estão atendidos. As duas pendências acima dependem só da dupla.</p>
+    </div>
+    <div class="pe"><span>Entrega até 15/10</span><span>10 / 12</span></div>
+  </section>
+
+  <!-- 11 · ARTEFATOS E COMO RODAR -->
+  <section class="slide">
+    <div class="top"><div><div class="kicker">Reprodutibilidade</div><h2>Artefatos e como rodar do zero</h2></div><img class="mark" src="../report/assets/logo-ifg-mark.png" alt="IFG"></div>
+    <div class="content">
+      <div class="duas" style="gap:40px;align-items:flex-start">
+        <div class="col">
+          <h3>Artefatos</h3>
+          <ul class="lista denso">
+            <li><code>src/</code>: preprocess · dataset · model · train · optuna_search · experimentos · avaliar_teste</li>
+            <li><code>results/</code>: tabelas (CSV/JSON) e figuras (PNG)</li>
+            <li><code>docs/decisoes_dados.md</code>: <b>D-001 a D-015</b></li>
+            <li><code>report/</code> e <code>slides/</code></li>
+          </ul>
+        </div>
+        <div class="col">
+          <h3>Ordem dos comandos</h3>
+          <pre>python download_data.py
+python src/preprocess.py
+python src/eda.py
+python src/dataset.py
+python src/train.py
+python src/optuna_search.py
+python src/experimentos.py
+python src/avaliar_teste.py</pre>
+        </div>
+      </div>
+      <p class="denso">Os dados ficam fora do Git; o download e o manifesto com <b>SHA-256</b> garantem a reprodutibilidade.</p>
+    </div>
+    <div class="pe"><span>Do zero à avaliação final</span><span>11 / 12</span></div>
+  </section>
+
+  <!-- 12 · PONTO DE SITUAÇÃO -->
+  <section class="slide">
+    <div class="top"><div><div class="kicker">Ponto de situação</div><h2>Aprendizado e limites</h2></div><img class="mark" src="../report/assets/logo-ifg-mark.png" alt="IFG"></div>
+    <div class="content">
+      <div class="duas">
+        <div class="col"><h3>O que funcionou</h3><p class="denso">As redes recorrentes superaram a régua nos dois cenários. A diferença entre as três famílias é <b>pequena</b> — o SimpleRNN entrega quase o mesmo com <b>um terço dos parâmetros</b>.</p></div>
+        <div class="col"><h3>Limitações</h3><p class="denso">Sem GPU, a busca foi reduzida. Não houve validação cruzada. Só prevemos <b>1 dia à frente</b>. Dias atípicos (feriados) são os mais difíceis.</p></div>
+      </div>
+      <p class="lead">A lição central: o maior ganho veio de <b>decisões sobre os dados</b> (auditoria, granularidade diária, janela de 30 dias) — não da escolha da célula recorrente.</p>
+    </div>
+    <div class="pe"><span>Fim do pipeline · Obrigado!</span><span>12 / 12</span></div>
+  </section>
+
+</div>
+<script>
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var i = 0;
+  function show(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('active', k === i); });
+  }
+  function fit(){
+    var e = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    document.documentElement.style.setProperty('--esc', e);
+  }
+  window.addEventListener('resize', fit); fit();
+  function doHash(){ var m=(location.hash||'').match(/(\d+)/); show(m ? parseInt(m[1],10)-1 : 0); }
+  window.addEventListener('hashchange', doHash); doHash();
+  document.addEventListener('keydown', function(ev){
+    if (['ArrowRight','ArrowDown',' ','PageDown','Enter'].indexOf(ev.key) >= 0) { show(i+1); ev.preventDefault(); }
+    if (['ArrowLeft','ArrowUp','PageUp'].indexOf(ev.key) >= 0) { show(i-1); ev.preventDefault(); }
+    if (ev.key === 'Home') show(0);
+    if (ev.key === 'End') show(slides.length - 1);
+  });
+  window.showSlide = show;
+</script>
+</body>
+</html>
