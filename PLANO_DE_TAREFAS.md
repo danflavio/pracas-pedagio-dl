@@ -112,64 +112,64 @@ Legenda de responsaveis: **A** = Daniel Flavio - **B** = Guilherme Martins - **A
 
 ---
 
-### F4 - Baselines + arquiteturas iniciais - 04-08/10
+### F4 - Baselines + arquiteturas iniciais - 04-08/10  (executado em 13/10)
 
-- [ ] 04/10 - **B** - **Baselines obrigatorios**: persistencia (y = ultimo valor) e media movel - referencia minima de erro
-- [ ] 04/10 - **B** - (Opcional forte) MLP simples sobre janela achatada, como 2o baseline
-- [ ] 05/10 - **A** - Implementar as **3 familias**: `SimpleRNN`, `GRU`, `LSTM` - mesmas camadas, mesmos dados, mesmo seed
-- [ ] 05/10 - **B** - `src/train.py` com early stopping, `ModelCheckpoint`, `ReduceLROnPlateau`, gradient clipping e curvas de treino/validacao
-- [ ] 06/10 - **A** - Rodada-piloto (poucas epocas) para validar o pipeline e medir tempo por epoca
-- [ ] 06/10 - **B** - **Baseline de referencia por familia** (hiperparametros "razoaveis" fixos) para calibrar depois com o Optuna
-- [ ] 07/10 - **A** - Metricas: **MAE, RMSE, R2** (e discutir erro na unidade: veiculos); implementar avaliacao em val
-- [ ] 08/10 - **A+B** - Curvas de treino/val: identificar subajuste/overfitting iniciais
+- [x] 13/10 - **B** - **Baselines obrigatorios**: persistencia e media movel (`src/train.py::baselines`)
+- [ ] 13/10 - **B** - (Opcional forte) MLP simples sobre janela achatada - **nao feito** (nao essencial)
+- [x] 13/10 - **A** - **3 familias** implementadas (`src/model.py`): mesmas camadas, mesmos dados, mesmo seed
+- [x] 13/10 - **B** - `src/train.py` com early stopping, `ReduceLROnPlateau`, gradient clipping e curvas
+- [x] 13/10 - **A** - Rodada-piloto (dados completos): **GRU MAE 1.108 / LSTM 1.138 / SimpleRNN 1.249** (val); tempo por epoca medido
+- [x] 13/10 - **B** - **Config de referencia** fixa por familia, usada como base de comparacao
+- [x] 13/10 - **A** - Metricas **MAE, RMSE, R2** na unidade do alvo (veiculos)
+- [x] 13/10 - **A+B** - Curvas treino/val salvas em `results/figures/curva_*.png`
 
 **Pronto quando:** as 3 familias treinam ponta a ponta, com metricas em val e curvas salvas em `results/`.
 
 ---
 
-### F5 - Hiperparametrizacao com Optuna - 08-11/10
+### F5 - Hiperparametrizacao com Optuna - 08-11/10  (executado em 13/10)
 
-- [ ] 08/10 - **A** - Configurar o **estudo**: metrica = RMSE (ou MAE) **na validacao**, `seed` fixo, pruner (`MedianPruner`/`Hyperband`)
-- [ ] 08/10 - **B** - Definir **espaco de busca** e justifica-lo no relatorio:
-  - [ ] `model_type` = {SimpleRNN, GRU, LSTM} (categorical -> comparacao sob condicoes equivalentes)
-  - [ ] `window_size` em dias (ex.: {7, 14, 30, 90})
-  - [ ] `units` por camada em 32-256 (log)
-  - [ ] `n_layers` em 1-3
-  - [ ] `dropout` em 0-0,5 - `recurrent_dropout` em 0-0,3
-  - [ ] `learning_rate` em 1e-4-1e-2 (log)
-  - [ ] `batch_size` em {32, 64, 128, 256}
-  - [ ] otimizador {Adam, RMSprop} - `clipnorm`
-  - [ ] paciencia do early stopping
-- [ ] 09/10 - **A** - **Storage do Optuna**: `RDBStorage` em Postgres gratis (Neon/Supabase) **ou** SQLite - persistir para nao perder a busca
-- [ ] 09/10 - **A** - Rodar a busca (**40-80 trials**, conforme orcamento de GPU) e **salvar o estudo** (`study.db` / export em `results/`)
-- [ ] 10/10 - **B** - Subir **Optuna Dashboard** para visualizar
-- [ ] 10/10 - **B** - Extrair: melhores tentativas, **importancia dos hiperparametros**, grafico de coordenadas paralelas, efeito no tempo de treino e no overfitting
-- [ ] 11/10 - **A+B** - Selecionar e justificar a **configuracao final** e as **3 variacoes promissoras** por familia
+- [x] 13/10 - **A** - Estudo: metrica RMSE **na validacao**, seed fixo, `MedianPruner`
+- [x] 13/10 - **B** - **Espaco de busca** definido e justificado (ver `src/optuna_search.py`):
+  - [x] `model_type` = {SimpleRNN, GRU, LSTM}
+  - [x] `window` em {7, 14, 30} dias
+  - [x] `units` 32-128 (log)
+  - [x] `n_layers` em {1, 2}
+  - [x] `dropout` 0-0,3 (**recurrent_dropout fixado em 0**: custo em CPU, registrado no codigo)
+  - [x] `learning_rate` 1e-4 a 5e-3 (log)
+  - [x] `batch_size` em {128, 256} (batch 64 medido e descartado: 21,1s/epoca contra 10,2s)
+  - [x] otimizador {Adam, RMSprop} com `clipnorm=1.0`
+  - [x] paciencia (5) + **subamostragem da busca** (35% do treino, por orcamento de CPU)
+- [x] 13/10 - **A** - **Storage**: SQLite (`data/optuna_study.db`, fora do Git)
+- [x] 13/10 - **A** - Busca executada: **15 trials** (9 completos, 6 podados) em **13,4 min**; export em `results/optuna_trials.csv`
+- [ ] 13/10 - **B** - Optuna Dashboard: **nao subido** (nao essencial para a entrega)
+- [x] 13/10 - **B** - Extraido: melhor tentativa por familia e efeito no tempo/overfitting (`results/optuna_resumo.json`)
+- [x] 13/10 - **A+B** - **Config final selecionada e justificada**: a vencedora da busca rendeu **pior** (MAE >= 1.493) que a referencia (1.108) em dados completos -> adota-se a **referencia** (`results/config_final.json`)
 
-**Pronto quando:** `results/` contem o espaco de busca, no de trials, metrica otimizada, melhores tentativas e a justificativa da config final (entregavel explicito do PDF).
-
----
-
-### F6 - Experimentos exigidos pela frente 3.2 - 11-13/10
-
-- [ ] 11/10 - **A** - **Comparacao SimpleRNN vs GRU vs LSTM** com a melhor config, sob condicoes identicas (dados, janela, seed, epocas) - tabela + grafico
-- [ ] 12/10 - **A** - **Profundidade e largura**: camadas recorrentes (1-3) x unidades (32-256) -> desempenho vs **no de parametros** vs tempo
-- [ ] 12/10 - **B** - **Tamanhos de janela**: em dias (ex.: 7, 14, 30, 90) -> qual melhora a previsao? efeito em custo, estabilidade e overfitting
-- [ ] 13/10 - **B** - **Dependencias de longo prazo**: janelas maiores ajudam? discutir com evidencia
-- [ ] 13/10 - **A** - **Estrategia de previsao**: relatar 1 passo vs multi-step (se implementado) e as **dimensoes de entrada/saida**
-- [ ] 13/10 - **A+B** - **Custo**: tempo de treino, tempo de inferencia (ms/predicao) e no de parametros por arquitetura
-
-**Pronto quando:** existem tabelas e graficos cobrindo **todos** os itens da frente 3.2 (o PDF exige cada um).
+**Pronto quando:** `results/` contem o espaco de busca, no de trials, metrica otimizada e a justificativa da config final.
 
 ---
 
-### F7 - Avaliacao final no teste - 13-14/10
+### F6 - Experimentos exigidos pela frente 3.2 - 11-13/10  (executado em 13/10)
 
-- [ ] 13/10 - **A** - Treinar a config final e avaliar **uma unica vez** no **conjunto de teste** (nao ajustar nada depois)
-- [ ] 14/10 - **A** - Relatar MAE, RMSE e R2 explicando o significado na **unidade da variavel alvo** (veiculos)
-- [ ] 14/10 - **B** - Reportar os **dois protocolos de split** (cronologico e por grupos/pracas) e discutir diferenca
-- [ ] 14/10 - **B** - Analise de **erros por praca/concessionaria** (onde o modelo falha?) e limitacoes/incertezas
-- [ ] 14/10 - **A+B** - Comparar contra os baselines de persistencia/media movel
+- [x] 13/10 - **A** - **SimpleRNN vs GRU vs LSTM** com a MESMA config: GRU 1.537 / LSTM 1.550 / SimpleRNN 1.566 (MAE) - `results/experimentos.csv`
+- [x] 13/10 - **A** - **Profundidade e largura**: 1-3 camadas x 32-128 unidades -> desempenho vs parametros vs tempo
+- [x] 13/10 - **B** - **Tamanhos de janela**: 7, 14 e 30 dias - janela **30** melhor em RMSE
+- [x] 13/10 - **B** - **Dependencias de longo prazo**: janelas maiores ajudam; profundidade > 2 nao acrescenta
+- [x] 13/10 - **A** - **Estrategia de previsao**: 1 passo (t+1); **multi-step nao implementado** (declarado como limitacao); dimensoes de E/S documentadas
+- [x] 13/10 - **A+B** - **Custo**: tempo de treino, ms por previsao e no de parametros por arquitetura
+
+**Pronto quando:** existem tabelas e graficos cobrindo **todos** os itens da frente 3.2.
+
+---
+
+### F7 - Avaliacao final no teste - 13-14/10  (executado em 13/10)
+
+- [x] 13/10 - **A** - Config final treinada e avaliada **uma unica vez** no **conjunto de teste**
+- [x] 13/10 - **A** - MAE, RMSE e R2 relatados na **unidade do alvo** (veiculos)
+- [x] 13/10 - **B** - **Dois protocolos** reportados: cronologico (**MAE 1.126**) e por pracas (**MAE 1.469**), contra persistencia (1.536 e 1.774)
+- [ ] 13/10 - **B** - Analise de **erros por praca/concessionaria** - **parcial**: o recorte existe via split por grupos; analise fina fica como limitacao
+- [x] 13/10 - **A+B** - Comparacao contra os baselines: `results/teste_final_chrono.csv` e `results/teste_final_grupo.csv`
 
 **Pronto quando:** secao "Avaliacao final no teste e custo vs efetividade" escrita com tabela comparativa.
 
@@ -177,11 +177,11 @@ Legenda de responsaveis: **A** = Daniel Flavio - **B** = Guilherme Martins - **A
 
 ### F8 - Relatorio, slides e revisao final - 13-15/10
 
-- [ ] 13/10 - **B** - Montar relatorio na estrutura do PDF: (1) Introducao/objetivo, (2) Fonte e caracterizacao, (3) Arquiteturas e espaco de busca, (4) Validacao e selecao, (5) Teste e custo, (6) Limitacoes e conclusoes
-- [ ] 14/10 - **A** - Montar **slides (15 min)**: problema, dados, metodo, resultados, custo, conclusoes
-- [ ] 14/10 - **B** - Ensaiar a apresentacao e cronometrar (15 min duros)
-- [ ] 15/10 - **A+B** - Revisao final: conferir entrega (GitHub, estudo do Optuna, tabelas/graficos) e submeter
-- [ ] 15/10 - **A+B** - Garantir que o **link do GitHub esta publico/liberado** para o professor
+- [x] 13/10 - **B** - Relatorio montado em `report/relatorio.md` (6 secoes do PDF)
+- [x] 13/10 - **A** - **Slides (15 min)**: `slides/apresentacao.html` + `slides/apresentacao.pdf` (14 slides, 16:9)
+- [ ] 14/10 - **B** - Ensaiar a apresentacao e cronometrar (15 min duros) - **PENDENTE**
+- [x] 13/10 - **A+B** - Revisao: entrega conferida e commitada (`003eba2`)
+- [ ] 15/10 - **A+B** - Garantir que o **link do GitHub esta publico/liberado** - **PENDENTE**
 
 **Pronto quando:** tudo submetido antes de 15/10, com link do GitHub testado em navegador anonimo.
 

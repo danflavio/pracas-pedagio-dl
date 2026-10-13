@@ -96,7 +96,7 @@ ficam em [docs/decisoes_dados.md](docs/decisoes_dados.md). Desvios de planejamen
 - Pendencia operacional: apos clonar/puxar, cada integrante roda
   `nbstripout --install --attributes .gitattributes` (ver secao 3).
 
-- **2026-10-13 - F2 e F3 executadas; F4 (treino) em andamento.**
+- **2026-10-13 - F2 a F7 executadas; F8 (relatorio/slides) em andamento.**
 - F2 (`src/eda.py`, `src/eda_cobertura.py`): periodo 2024-01-01 a 2026-08-31 (974 dias);
   43 concessionarias e 345 pares `concessionaria|praca`; `volume_total` **sem zeros**, skew 14,9;
   serie descontinua (303 pracas com >= 180 dias; 47 cobrem os 974 dias). 4 figuras em `results/figures/`.
