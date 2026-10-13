@@ -85,13 +85,13 @@ Legenda de responsaveis: **A** = Daniel Flavio - **B** = Guilherme Martins - **A
 - [x] 13/10 - **B** - Estatisticas descritivas: pracas, dias, contagens por dimensao (`src/eda.py`)
 - [x] 13/10 - **B** - **Distribuicao de `volume_total`**: skew 14,9, **sem zeros**; histograma em `results/figures/01_hist_volume.png`
 - [x] 13/10 - **A** - Frequencia de **ausentes e duplicados**; dias faltantes por praca (D-011, D-008)
-- [ ] 13/10 - **B** - **Valores potencialmente anomalos** (PDF Sec.2.1): definir criterio (ex.: IQR ou z-score robusto por praca) para picos/quedas atipicas; decidir manter/winsorizar/marcar/remover - **PENDENTE**
+- [x] 13/10 - **B** - **Valores anomalos** (PDF Sec.2.1): criterio IQR por praca (limite de 3x o IQR) e decisao de **manter**; 3.751 dias (2,09%), 2,59% do volume - ver **D-015** e `src/eda_anomalias.py`
 - [x] 13/10 - **A** - Visualizacoes: serie temporal, histograma, dia da semana, heatmap praca x mes (`results/figures/`)
 - [x] 13/10 - **B** - **Cobertura temporal**: 2024-01-01 a 2026-08-31 (974 dias); 303 pracas com >= 180 dias (D-010)
-- [x] 13/10 - **A+B** - **Fechar decisoes pendentes** e registrar no relatorio (D-009 a D-014)
+- [x] 13/10 - **A+B** - **Fechar decisoes pendentes** e registrar no relatorio (D-009 a D-015)
 - [x] 13/10 - **A+B** - Justificar selecao/exclusao de atributos e **checar risco de vazamento** (canais em D-009; teste em `src/dataset.py`)
 
-**Pronto quando:** secao "Descricao do problema e dos dados" do relatorio escrita, com estatisticas, graficos e decisoes justificadas. *(Falta apenas o item de anomalias.)*
+**Pronto quando:** secao "Descricao do problema e dos dados" do relatorio escrita, com estatisticas, graficos e decisoes justificadas. **(Concluida.)**
 
 ---
 
@@ -201,16 +201,16 @@ Legenda de responsaveis: **A** = Daniel Flavio - **B** = Guilherme Martins - **A
 | 13-14/10 | F7 Teste | Resultado final no teste |
 | 13-15/10 | F8 Relatorio/slides | Entrega submetida |
 
-## 4. Riscos e armadilhas (checar antes de cada fase)
+## 4. Riscos e armadilhas (checados)
 
-- [ ] **Vazamento de dados:** scaler/encoder fitados so no treino; nenhum canal pode conter o alvo do dia t+1
-- [ ] **Serie curta (~33 meses):** validar com janelas de tamanhos diferentes; majoritariamente modelo global (pooling de pracas)
-- [ ] **Sem shuffle** em nenhum passo da serie temporal
-- [ ] **Zero-inflacao** e pracas com historico curto: decisao explicita e justificada
-- [ ] **Valores anomalos:** criterio explicito (IQR/z-score por praca) e decisao registrada (manter/winsorizar/marcar/remover)
-- [ ] **Comparacoes justas:** mesmo seed, mesmos dados, mesmo no de epocas quando comparar familias
-- [ ] **Reprodutibilidade:** fixar seeds e versionar o estudo do Optuna
-- [ ] **Se um ano tiver schema divergente**, documentar e tratar antes de concatenar
+- [x] **Vazamento de dados:** scaler ajustado **so no treino** (D-014) e verificado em `src/dataset.py::testes_rapidos`; nenhum canal contem o alvo do dia t+1
+- [x] **Serie curta:** as janelas de 7, 14 e 30 dias foram comparadas (F6); modelo **global** (pooling de pracas), como previsto
+- [x] **Sem shuffle** em nenhum passo: `shuffle=False` no treino e split por data (D-013)
+- [x] **Zero-inflacao:** nao existe (o bruto nao tem zeros); combinacao ausente = 0 em dia observado (D-012)
+- [x] **Valores anomalos:** criterio IQR por praca e decisao de manter registrados em **D-015**
+- [x] **Comparacoes justas:** mesma seed, mesmos dados e mesmas epocas dentro de cada experimento (F6)
+- [x] **Reprodutibilidade:** seed global 42, SHA-256 dos 3 arquivos (`data_manifest.json`) e estudo do Optuna exportado em `results/`
+- [x] **Schema divergente entre anos:** verificado na auditoria; colunas estaveis e tipos de `categoria_eixo` tratados (D-005, D-006)
 
 ## 5. Mapa rubrica -> evidencia
 
