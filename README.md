@@ -88,10 +88,22 @@ download_data.py  download + manifesto (URL, data, SHA-256)
 Acompanhe as fases F0-F8 em [PLANO_DE_TAREFAS.md](PLANO_DE_TAREFAS.md). Decisoes sobre os dados
 ficam em [docs/decisoes_dados.md](docs/decisoes_dados.md). Desvios de planejamento sao registrados aqui.
 
-- **2026-10-06 - F0 e F1 concluidas.** Proximo: **F2** (EDA e definicao do problema).
+- **2026-10-06 - F0 e F1 concluidas.**
 - F1 gerou `data/trafego_pedagio.parquet` (9.184.154 linhas, ~20 MB) via `src/preprocess.py`.
 - Achados da F1: encoding **Latin-1**; `mes_ano` e **diario, nao mensal**; drift em
   `categoria_eixo` (codigo vs rotulo em Q1/2025) e 4.853 chaves repetidas em Q1/2025 (somadas na
   agregacao). Ver D-001..D-008 em `docs/decisoes_dados.md`.
 - Pendencia operacional: apos clonar/puxar, cada integrante roda
   `nbstripout --install --attributes .gitattributes` (ver secao 3).
+
+- **2026-10-13 - F2 e F3 executadas; F4 (treino) em andamento.**
+- F2 (`src/eda.py`, `src/eda_cobertura.py`): periodo 2024-01-01 a 2026-08-31 (974 dias);
+  43 concessionarias e 345 pares `concessionaria|praca`; `volume_total` **sem zeros**, skew 14,9;
+  serie descontinua (303 pracas com >= 180 dias; 47 cobrem os 974 dias). 4 figuras em `results/figures/`.
+- F3 (`src/dataset.py`): serie `praca x dia` (180.737 linhas), janelas `X (window x 13)` e
+  `y = Total t+1`, dois splits (cronologico e por grupos), padronizacao **so no treino**.
+  Testes de vazamento temporal passando.
+- F4 (`src/model.py`, `src/train.py`): SimpleRNN/GRU/LSTM + baselines. **A persistencia e um
+  baseline forte** (val MAE ~1.470, R2 ~0,94): referencia obrigatoria para as RNNs.
+- F5 (`src/optuna_search.py`): busca com Optuna, metrica RMSE **na validacao**, MedianPruner.
+- Decisoes de desenho registradas: **D-009 a D-014**. PENDENTE na F2: criterio para **valores anomalos**.

@@ -107,3 +107,72 @@ Convencoes:
 ## Contagem de linhas
 
 - 2024 = 3.312.763 | 2025 = 3.274.157 | 2026 = 2.597.234 (total 9.184.154).
+
+---
+
+## D-009 - Unidade de observacao, canais e alvo (F2/F3)
+
+- Data: 2026-10-13
+- Decisao: unidade = **(concessionaria, praca, dia)**. Canais de entrada = volume diario por
+  `tipo_de_veiculo` {Passeio, Comercial, Moto} + Total, mais features de calendario (dia da
+  semana one-hot, mes em seno/cosseno). Alvo = **Total da praca no dia t+1**.
+- Evidencia: 345 pares `concessionaria|praca` e 974 dias (2024-01-01 a 2026-08-31). O Total
+  e a soma dos tipos e confere com o bruto (2.379.466.795 veiculos). `volume_total` tem
+  skew 14,9 (cauda longa), sem zeros.
+- Alternativas: alvo mensal (descartado em D-007); usar so os componentes sem o Total (perde
+  a informacao de nivel agregado, que e o preditor mais forte).
+- Impacto: define a forma do modelo: X = (window x 13 canais), y = 1 valor.
+
+## D-010 - Filtro de pracas: minimo de 180 dias observados
+
+- Data: 2026-10-13
+- Decisao: manter pracas com **>= 180 dias** observados -> **303 de 345**.
+- Evidencia: cobertura por praca - 47 com 974 dias, 182 com >= 365, 303 com >= 180, 334 com
+  >= 90; mediana de 432 dias. Series muito curtas nao formam janelas suficientes e
+  prejudicam a diversidade do split por grupos.
+- Alternativas: >= 365 dias (182 pracas - menos diversidade); manter todas (pracas com 23
+  dias nao geram amostra util).
+- Impacto: serie final com 180.737 linhas (179.124 observadas, 1.613 faltantes).
+
+## D-011 - Buraco no meio da serie: so aceitar janela 100% observada
+
+- Data: 2026-10-13
+- Decisao: uma janela (entrada + alvo) so e valida se **todos** os dias estao observados.
+- Evidencia: 106 pracas tem buracos no meio, somando 1.613 dias (parte relevante nas pontas,
+  por novas concessoes/free-flow que entram durante a serie - EPR Parana, Nova 364, Nova 381).
+- Alternativas: interpolar os buracos (inventa dado); mascarar (o Keras nao trata NaN
+  nativamente).
+- Impacto: descarta-se poucas janelas; **nenhum valor de volume e inventado**.
+
+## D-012 - Combinacao ausente (praca/dia sem aquele tipo) = volume 0
+
+- Data: 2026-10-13
+- Decisao: em dia **observado**, um `tipo_de_veiculo` sem linha recebe volume **0**.
+- Evidencia: o bruto so registra combinacoes com volume > 0 (minimo = 1; nao ha zeros).
+  Logo, ausencia de linha significa "nao passou aquele tipo naquele dia", nao "dado perdido".
+- Alternativas: tratar como ausente (geraria NaN em dia que de fato existiu).
+- Impacto: distingue "tipo ausente em dia existente" (0) de "dia inteiro ausente" (missing,
+  tratado em D-011).
+
+## D-013 - Protocolos de split (cronologico global + por grupos/pracas)
+
+- Data: 2026-10-13
+- Decisao: (1) **cronologico global**, cortando pelo **dia do alvo**: treino <= 2025-11-30,
+  val 2025-12-01 a 2026-04-30, teste 2026-05-01 a 2026-08-31; (2) **por grupos/pracas**,
+  70/15/15 com seed 42.
+- Evidencia: cortar pelo dia do alvo (e nao pelo inicio da janela) garante que o alvo mais
+  recente do treino seja anterior ao alvo mais antigo da validacao (verificado em
+  `src/dataset.py:testes_rapidos`).
+- Alternativas: split aleatorio de linhas (vazamento - descartado).
+- Impacto: com janela 30, X_train (105.754 x 30 x 13), X_val (30.678 x 30 x 13),
+  X_test (27.467 x 30 x 13).
+
+## D-014 - Padronizacao ajustada SOMENTE no treino (calculada em float64)
+
+- Data: 2026-10-13
+- Decisao: padronizar os canais de volume com media/desvio do **treino**; calcular essas
+  estatisticas em **float64**.
+- Evidencia: media calculada em float32 sobre ~3,17 milhoes de valores gera deriva de ~1e-3;
+  recalculada em float64, o residuo cai para ~1e-4.
+- Alternativas: padronizar com o dataset inteiro (vazamento - viola PDF Sec.2.2).
+- Impacto: atende ao requisito "parametros de pre-processamento ajustados somente no treino".

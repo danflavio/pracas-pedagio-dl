@@ -73,37 +73,37 @@ Legenda de responsaveis: **A** = Daniel Flavio - **B** = Guilherme Martins - **A
 
 ---
 
-### F2 - EDA e definicao do problema - 28/09-01/10
+### F2 - EDA e definicao do problema - 28/09-01/10  (executado em 13/10)
 
-- [ ] 28/09 - **A** - Parse de `mes_ano` (`dd/mm/yyyy`, **data diaria**) -> `datetime`; `volume_total` -> float (tratar separador de milhar e virgula decimal)
-- [ ] 28/09 - **A** - Definir formalmente **unidade de observacao** e a **variavel alvo** (ver secao 1)
-- [ ] 29/09 - **B** - Estatisticas descritivas: no de pracas, no de dias, contagem por `concessionaria`, `tipo_de_veiculo`, `sentido`, `categoria_eixo`
-- [ ] 29/09 - **B** - **Distribuicao de `volume_total`**: faixa, dispersao, assimetria, outliers; discutir **zero-inflacao** e combinacoes vazias
-- [ ] 29/09 - **A** - Frequencia de **valores ausentes e duplicados**; investigar **dias faltantes** por praca (serie descontinua)
-- [ ] 29/09 - **B** - **Valores potencialmente anomalos** (PDF Sec.2.1): definir criterio (ex.: IQR ou z-score robusto por praca) para picos/quedas atipicas; decidir **manter, winsorizar, marcar ou remover** - justificar e registrar no relatorio
-- [ ] 30/09 - **A** - Visualizacoes: serie temporal de pracas representativas, histograma do volume, heatmap praca x mes
-- [ ] 30/09 - **B** - Analisar **cobertura temporal**: confirmar periodo exato (jan/2024 ate qual mes de 2026?) e **dias faltantes**
-- [ ] 30/09 - **A+B** - **Fechar decisoes pendentes** da secao 1 e registrar no relatorio
-- [ ] 01/10 - **A+B** - Justificar selecao/exclusao de atributos e **checar risco de vazamento** (nenhuma feature pode conter o valor do alvo do dia t+1)
+- [x] 13/10 - **A** - Parse de `mes_ano` (`dd/mm/yyyy`, **data diaria**) -> `datetime`; `volume_total` -> float (feito na F1; D-002/D-003)
+- [x] 13/10 - **A** - Definir formalmente **unidade de observacao** e a **variavel alvo** (D-009)
+- [x] 13/10 - **B** - Estatisticas descritivas: pracas, dias, contagens por dimensao (`src/eda.py`)
+- [x] 13/10 - **B** - **Distribuicao de `volume_total`**: skew 14,9, **sem zeros**; histograma em `results/figures/01_hist_volume.png`
+- [x] 13/10 - **A** - Frequencia de **ausentes e duplicados**; dias faltantes por praca (D-011, D-008)
+- [ ] 13/10 - **B** - **Valores potencialmente anomalos** (PDF Sec.2.1): definir criterio (ex.: IQR ou z-score robusto por praca) para picos/quedas atipicas; decidir manter/winsorizar/marcar/remover - **PENDENTE**
+- [x] 13/10 - **A** - Visualizacoes: serie temporal, histograma, dia da semana, heatmap praca x mes (`results/figures/`)
+- [x] 13/10 - **B** - **Cobertura temporal**: 2024-01-01 a 2026-08-31 (974 dias); 303 pracas com >= 180 dias (D-010)
+- [x] 13/10 - **A+B** - **Fechar decisoes pendentes** e registrar no relatorio (D-009 a D-014)
+- [x] 13/10 - **A+B** - Justificar selecao/exclusao de atributos e **checar risco de vazamento** (canais em D-009; teste em `src/dataset.py`)
 
-**Pronto quando:** secao "Descricao do problema e dos dados" do relatorio escrita, com estatisticas, graficos e decisoes justificadas.
+**Pronto quando:** secao "Descricao do problema e dos dados" do relatorio escrita, com estatisticas, graficos e decisoes justificadas. *(Falta apenas o item de anomalias.)*
 
 ---
 
-### F3 - Pre-processamento e janelamento - 01-04/10
+### F3 - Pre-processamento e janelamento - 01-04/10  (executado em 13/10)
 
-- [ ] 01/10 - **A** - Agregar/pivotar para o formato multivariado: uma linha por `praca x dia`, colunas = canais de volume (ex.: total, passeio, comercial, moto, share comercial)
-- [ ] 01/10 - **A** - Criar **features de calendario** (dia da semana, mes, feriado) - consequencia da granularidade diaria (ver D-007)
-- [ ] 01/10 - **B** - Codificacao de variaveis categoricas (one-hot ou embeddings - justificar a escolha)
-- [ ] 02/10 - **A** - **Padronizacao/normalizacao fitada SOMENTE no treino** e aplicada em val/teste (salvar os parametros do scaler)
-- [ ] 02/10 - **B** - Construir **janelas (sliding windows)** respeitando a ordem temporal; definir `X` (janela x canais) e `y` (t+1) e documentar as **dimensoes de entrada/saida**
-- [ ] 02/10 - **A** - Implementar o **split 1 - cronologico global** (sem shuffle) e o **split 2 - por grupos (pracas)**
-- [ ] 02/10 - **B** - Tratar pracas com historico curto/serie descontinua (excluir, imputar ou mascarar - justificar)
-- [ ] 03/10 - **A** - Criar `src/dataset.py` reprodutivel (mesmas janelas para todos os modelos)
-- [ ] 03/10 - **B** - **Validacao cruzada temporal (opcional, PDF Sec.2.3):** `TimeSeriesSplit`/rolling-origin com janela expansiva (ex.: 3 folds, sem shuffle) para estimar a **variancia** das metricas - justificar ganho vs custo numa serie curta
-- [ ] 04/10 - **A+B** - Escrever testes rapidos: (a) nenhum `y` vaza para `X`; (b) split nao embaralha; (c) scaler nao ve val/teste
+- [x] 13/10 - **A** - Agregar/pivotar para `praca x dia`, canais de volume (D-009)
+- [x] 13/10 - **A** - Criar **features de calendario** (dia da semana one-hot, mes seno/cosseno) - consequencia da granularidade diaria (D-007)
+- [x] 13/10 - **B** - Codificacao de categoricas: **nao aplicavel** - a unidade agrega sobre sentido/cobranca/categoria; restam os 3 tipos de veiculo como canais (D-009)
+- [x] 13/10 - **A** - **Padronizacao fitada SOMENTE no treino** (D-014); parametros devolvidos por `preparar()`
+- [x] 13/10 - **B** - **Janelas (sliding windows)**: `X` (window x 13), `y` = Total t+1; dimensoes documentadas (D-013)
+- [x] 13/10 - **A** - **Split 1 - cronologico global** + **Split 2 - por grupos (pracas)** (D-013)
+- [x] 13/10 - **B** - Pracas com historico curto/serie descontinua: filtro >= 180 dias (D-010) + janela 100% observada (D-011)
+- [x] 13/10 - **A** - `src/dataset.py` reprodutivel (mesmas janelas para todos os modelos)
+- [ ] 13/10 - **B** - **Validacao cruzada temporal (opcional, PDF Sec.2.3)**: nao executada - declarar como **limitacao** no relatorio
+- [x] 13/10 - **A+B** - Testes rapidos: sem vazamento temporal, sem shuffle, scaler so no treino (`testes_rapidos`)
 
-**Pronto quando:** um unico pipeline gera os 3 conjuntos (treino/val/teste) de forma reprodutivel, para os dois protocolos de split (+ CV temporal opcional).
+**Pronto quando:** um unico pipeline gera os 3 conjuntos (treino/val/teste) de forma reprodutivel, para os dois protocolos de split (CV temporal opcional nao executada).
 
 ---
 
