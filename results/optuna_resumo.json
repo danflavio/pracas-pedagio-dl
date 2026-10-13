@@ -1,0 +1,46 @@
+{
+  "n_trials_total": 15,
+  "n_trials_completos": 9,
+  "melhor_trial": 12,
+  "melhor_RMSE_val": 2770.3551058552753,
+  "melhores_params": {
+    "window": 30,
+    "model_type": "SimpleRNN",
+    "units": 54,
+    "n_layers": 1,
+    "dropout": 0.10351603797988025,
+    "learning_rate": 0.0014479666999312275,
+    "batch_size": 128,
+    "optimizer": "rmsprop"
+  },
+  "melhor_por_familia": {
+    "SimpleRNN": {
+      "RMSE_val": 2770.3551058552753,
+      "params": {
+        "window": 30,
+        "model_type": "SimpleRNN",
+        "units": 54,
+        "n_layers": 1,
+        "dropout": 0.10351603797988025,
+        "learning_rate": 0.0014479666999312275,
+        "batch_size": 128,
+        "optimizer": "rmsprop"
+      },
+      "trial": 12
+    },
+    "GRU": {
+      "RMSE_val": 3502.078768362032,
+      "params": {
+        "window": 30,
+        "model_type": "GRU",
+        "units": 63,
+        "n_layers": 1,
+        "dropout": 0.21228338433913663,
+        "learning_rate": 0.0008394837199346457,
+        "batch_size": 128,
+        "optimizer": "rmsprop"
+      },
+      "trial": 5
+    }
+  }
+}
