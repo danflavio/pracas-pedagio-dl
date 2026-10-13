@@ -42,6 +42,11 @@ A consequência do item 2 é direta: **não dá para treinar um modelo por praç
 teriam pouquíssimos dias. A solução foi treinar **um único modelo, com todas as praças juntas**
 (modelo global).
 
+**Um terceiro cuidado com os dados.** Marcamos os dias fora do padrão de cada praça (critério
+IQR, com limite de 3 vezes o IQR). Eles são apenas **2% dos dias** e **2,6% do volume** — e os
+maiores casos são claramente eventos reais, como o **Reveillon numa rodovia do litoral**.
+Decidimos **manter** esses dias: apagá-los seria esconder justamente o que é mais difícil prever.
+
 ## 3. Como o modelo funciona
 
 Cada praça vira uma sequência de dias. Para cada dia, o modelo recebe **13 sinais**:
@@ -80,7 +85,71 @@ não prova nada sozinho. Um modelo só tem valor se **bater essas duas réguas**
 
 ## 5. Resultado
 
-**[PENDENTE — tabela final no conjunto de teste e comparação entre as famílias]**
+### 5.1 Comparando as três arquiteturas
+
+Sob a mesma configuração (mesmos dados, mesma janela, mesma semente), com os dados completos:
+
+| Arquitetura | MAE | RMSE | Parâmetros | Tempo de treino |
+|---|---|---|---|---|
+| **GRU** | **1.537** | **2.702** | 11.233 | 9 min |
+| LSTM | 1.550 | 2.747 | 14.743 | 7 min |
+| SimpleRNN | 1.566 | 2.725 | 3.727 | 3 min |
+
+As três ficam **muito próximas**. O SimpleRNN chega perto gastando **um terço dos parâmetros** —
+o que, na prática, é um resultado relevante: mais complexidade não trouxe ganho proporcional.
+
+### 5.2 Quantos dias olhar e qual tamanho usar
+
+| Janela | RMSE | | Camadas | MAE |
+|---|---|---|---|---|
+| **30 dias** | **2.725** | | **2** | **1.493** |
+| 14 dias | 3.020 | | 3 | 1.503 |
+| 7 dias | 3.061 | | 1 | 1.566 |
+
+| Unidades | Parâmetros | MAE | Treino | Por previsão |
+|---|---|---|---|---|
+| 32 | 1.505 | 1.713 | 1 min | 0,07 ms |
+| 64 | 5.057 | 1.598 | 4 min | 0,10 ms |
+| **128** | 18.305 | **1.514** | 7 min | 0,12 ms |
+
+Janelas mais longas ajudam. Duas camadas batem uma — a terceira não acrescenta. E mais unidades
+melhoram o erro, mas o custo cresce **desproporcional**: 12 vezes mais parâmetros para ganhar
+cerca de 12% de MAE.
+
+### 5.3 Uma observação importante sobre a busca
+
+Os números acima saíram da configuração vencedora da busca. Quando essa configuração foi
+retreinada com os dados completos, rendeu MAE a partir de **1.493** — **pior** que a
+configuração de referência do piloto (**1.108**). Isso mostra, com evidência, que **o orçamento
+da busca foi pequeno demais** (sem GPU). Por isso o modelo final usa a configuração de
+referência, e não a da busca.
+
+### 5.4 Avaliação final no teste
+
+Depois de escolher a configuração, o teste foi usado **uma única vez**, sem ajustar nada depois.
+
+**Cenário 1 — continuar a série da mesma praça** (divisão por data):
+
+| Modelo | MAE | RMSE | R² |
+|---|---|---|---|
+| Repetir o último dia | 1.536 | 3.303 | 0,92 |
+| Média dos últimos dias | 1.831 | 4.099 | 0,88 |
+| **GRU (modelo final)** | **1.126** | **2.773** | **0,95** |
+
+**Cenário 2 — prever em praças novas** (divisão por praça):
+
+| Modelo | MAE | RMSE | R² |
+|---|---|---|---|
+| Repetir o último dia | 1.774 | 3.699 | 0,92 |
+| Média dos últimos dias | 2.028 | 4.423 | 0,89 |
+| **GRU (modelo final)** | **1.469** | **3.276** | **0,94** |
+
+O modelo bate a régua **nos dois cenários**: erro cerca de **27% menor** no primeiro e **17%
+menor** no segundo. Para dar escala: o volume médio de uma praça é de cerca de 13 mil veículos
+por dia, então um erro de 1.126 equivale a aproximadamente **8%** do movimento diário.
+
+A vantagem cai em praças novas — o que faz sentido: prever uma praça que o modelo **nunca viu** é
+mais difícil do que continuar a série de uma praça conhecida.
 
 ## 6. Limitações e conclusão
 
@@ -92,7 +161,18 @@ não prova nada sozinho. Um modelo só tem valor se **bater essas duas réguas**
 - **Só prevemos 1 dia à frente.** Não testamos t+2 nem t+3.
 - **Buraco de série é descartado**, então usamos um pouco menos de dados do que existe.
 
-**Conclusão:** [PENDENTE]
+**Conclusão:** as redes recorrentes funcionaram. Reduziram o erro em cerca de **27%** ao continuar a
+série de uma praça e **17%** em praças novas, sempre batendo a régua mais forte.
+
+O achado mais interessante, porém, **não foi a arquitetura vencedora**. As três famílias
+empataram na prática, e o SimpleRNN entregou quase o mesmo resultado com **um terço dos
+parâmetros**. O ganho real veio de decisões sobre os dados — janela de 30 dias e duas camadas —
+e não da escolha da célula.
+
+Uma última observação, que só aparece porque testamos: a configuração vencedora da busca de
+parâmetros rendeu **pior** que a configuração de referência quando retreinada com os dados
+completos. Isso expõe o limite do hardware disponível (sem placa de vídeo) de forma concreta, em
+vez de só declarada.
 
 ---
 

@@ -1,0 +1,16 @@
+{
+  "model_type": "GRU",
+  "window": 30,
+  "units": 64,
+  "n_layers": 1,
+  "dropout": 0.0,
+  "recurrent_dropout": 0.0,
+  "learning_rate": 0.001,
+  "optimizer": "adam",
+  "clipnorm": 1.0,
+  "batch_size": 64,
+  "epochs": 60,
+  "patience": 6,
+  "seed": 42,
+  "origem": "Config de referencia (F4). Escolhida como final por ter o melhor MAE na validacao (1.108) entre todos os treinos em dados completos. A config vencedora da busca Optuna, retreinada em dados completos (F6), ficou PIOR (MAE >= 1.493) - evidencia de que o orcamento da busca (CPU-only) foi pequeno."
+}

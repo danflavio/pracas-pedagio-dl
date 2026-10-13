@@ -36,6 +36,11 @@
 
 Legenda de responsaveis: **A** = Daniel Flavio - **B** = Guilherme Martins - **A+B** = os dois
 
+> **Status em 2026-10-13.** F0-F3 concluidas. **F4 a F7 executadas** (numeros no `README.md`,
+> secao 6, e em `results/`); F8 (relatorio + slides) em andamento. Os checkboxes abaixo refletem o
+> **plano original** e nao foram todos marcados um a um; onde houve desvio de plano, o registro
+> esta em `docs/decisoes_dados.md` (D-001 a D-015) e no README.
+
 ### F0 - Setup do projeto - 25-26/09
 
 - [x] 26/09 - **B** - Criar repositorio no GitHub com a estrutura:

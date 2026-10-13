@@ -106,4 +106,14 @@ ficam em [docs/decisoes_dados.md](docs/decisoes_dados.md). Desvios de planejamen
 - F4 (`src/model.py`, `src/train.py`): SimpleRNN/GRU/LSTM + baselines. **A persistencia e um
   baseline forte** (val MAE ~1.470, R2 ~0,94): referencia obrigatoria para as RNNs.
 - F5 (`src/optuna_search.py`): busca com Optuna, metrica RMSE **na validacao**, MedianPruner.
-- Decisoes de desenho registradas: **D-009 a D-014**. PENDENTE na F2: criterio para **valores anomalos**.
+- Decisoes de desenho registradas: **D-009 a D-015** (anomalias incluidas em D-015).
+- F6 (`src/experimentos.py`, dados completos): familias **GRU 1.537 / LSTM 1.550 / SimpleRNN 1.566**
+  (MAE na validacao) - empate tecnico; janela **30 dias** melhor; **2 camadas** melhor que 1;
+  **128 unidades** melhoram o MAE com **12x mais parametros** (retorno decrescente).
+- **Achado importante:** a config vencedora da busca, retreinada com dados completos, rendeu
+  **pior** que a config de referencia do piloto. Evidencia, com numero, de que o orcamento da
+  busca (CPU-only) foi pequeno. O modelo final usa a **config de referencia** (`results/config_final.json`).
+- F7 (`src/avaliar_teste.py`): no **teste**, MAE **1.126** (persistencia 1.536) no split cronologico
+  e MAE **1.469** (persistencia 1.774) no split por pracas - o modelo bate a regua nos dois cenarios.
+- Apresentacao: `slides/apresentacao.html` e `slides/apresentacao.pdf` (14 slides, 16:9).
+- Relatorio: `report/relatorio.md`. Anomalias: `results/anomalias_por_praca.csv`.

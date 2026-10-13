@@ -32,8 +32,13 @@ def main() -> None:
     ap.add_argument("--split", default="chrono", choices=["chrono", "grupo"])
     args = ap.parse_args()
 
-    resumo = json.loads((RESULTS / "optuna_resumo.json").read_text(encoding="utf-8"))
-    base = dict(resumo["melhores_params"])
+    cfg = RESULTS / "config_final.json"
+    if cfg.exists():
+        base = json.loads(cfg.read_text(encoding="utf-8"))
+        base.pop("origem", None)
+    else:
+        resumo = json.loads((RESULTS / "optuna_resumo.json").read_text(encoding="utf-8"))
+        base = dict(resumo["melhores_params"])
     base.update(epochs=EPOCAS, patience=PACIENCIA, seed=ds.GLOBAL_SEED)
 
     print(f"config final: {base}", flush=True)

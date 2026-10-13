@@ -176,3 +176,17 @@ Convencoes:
   recalculada em float64, o residuo cai para ~1e-4.
 - Alternativas: padronizar com o dataset inteiro (vazamento - viola PDF Sec.2.2).
 - Impacto: atende ao requisito "parametros de pre-processamento ajustados somente no treino".
+
+## D-015 - Valores anomalos: criterio IQR por praca e decisao de MANTER
+
+- Data: 2026-10-13
+- Decisao: criterio = **IQR por praca**, com limite de **3x o IQR** sobre o Total diario.
+  As linhas marcadas sao **mantidas** - nao winsorizamos e nao removemos.
+- Evidencia: 3.751 dias (2,09% de 179.124) marcados, em 222 das 303 pracas; representam
+  **2,59% do volume total**; 2.026 picos para cima e 1.725 quedas. Os maiores desvios sao
+  **sazonais e coerentes**: a AUTOPISTA LITORAL SUL (rodovia do litoral) dispara em
+  02-05/jan/2026 (Reveillon), chegando a **2,4x** o limite superior.
+- Alternativas: winsorizar (apagaria o Reveillon - justamente os dias mais importantes de
+  acertar); remover (perderia 2,6% do volume e eventos reais).
+- Impacto: nenhuma linha e alterada. O criterio fica registrado para a leitura dos erros
+  (Sec.6 do relatorio). Resumo por praca em `results/anomalias_por_praca.csv`.
