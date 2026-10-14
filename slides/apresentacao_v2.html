@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Previsão de volume em praças de pedágio — V2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--tinta:#22303F;--verde:#0E7A3C;--verde-forte:#0A4B26;--suave:#6C7A72;--vermelho:#C8102E;--esc:1}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;background:#0C1712;font-family:"Baloo 2",system-ui,sans-serif;color:var(--tinta)}
+  .stage{position:absolute;top:50%;left:50%;width:1280px;height:720px;transform:translate(-50%,-50%) scale(var(--esc));
+    background:#FBFAF4;overflow:hidden}
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;padding:40px 60px 48px;
+    background-color:#FBFAF4;
+    background-image:linear-gradient(#E8EFE7 1px,transparent 1px),linear-gradient(90deg,#E8EFE7 1px,transparent 1px);
+    background-size:30px 30px}
+  .slide.active{display:flex}
+  .hd{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}
+  .kick{font-family:"Caveat",cursive;font-weight:700;font-size:29px;color:var(--verde);letter-spacing:.02em}
+  h2{font-family:"Baloo 2";font-weight:800;font-size:52px;line-height:1.06;margin-top:2px}
+  .body{font-family:"Baloo 2";font-weight:500;font-size:30px;line-height:1.4;color:#33413A}
+  .hand{font-family:"Caveat",cursive;font-weight:600;font-size:31px;line-height:1.3;color:#4A574F}
+  .content{flex:1;display:flex;flex-direction:column;justify-content:center;gap:20px;margin-top:8px}
+  .wm{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);font-family:"Baloo 2";font-weight:800;
+    font-size:440px;color:var(--verde);opacity:.03;user-select:none;pointer-events:none}
+  .mark{height:52px;width:auto}
+
+  .card{border:3px solid var(--tinta);border-radius:16px 11px 18px 12px/12px 17px 11px 16px;background:#fff;
+    padding:15px 19px;box-shadow:4px 5px 0 rgba(34,48,63,.10)}
+  .card.g{background:#EAF5EC}.card.o{background:#FBF1E3}.card.t{background:#E7F3F2}.card.y{background:#FCF6DD}
+  .card h3{font-family:"Baloo 2";font-weight:700;font-size:29px;color:var(--verde-forte);margin-bottom:6px}
+  .card p{font-size:24px;line-height:1.34;color:#3A4740}
+  .two{display:flex;gap:34px;align-items:stretch}
+  .two>.col{flex:1}
+  .three{display:flex;gap:26px;align-items:stretch}
+  .three>.col{flex:1}
+
+  ul.lista{list-style:none}
+  ul.lista li{position:relative;padding-left:34px;margin:13px 0;font-size:30px;line-height:1.4;color:#33413A}
+  ul.lista li::before{content:"";position:absolute;left:6px;top:.5em;width:10px;height:10px;border-radius:50%;background:var(--verde)}
+
+  .nums{display:flex;gap:54px;align-items:flex-end}
+  .num b{font-family:"Baloo 2";font-weight:800;font-size:84px;line-height:1;color:var(--verde)}
+  .num span{display:block;font-size:20px;color:var(--suave);margin-top:6px;font-family:"Caveat";font-size:30px}
+
+  .fluxo{display:flex;align-items:center;gap:16px;font-family:"Baloo 2";font-weight:600;font-size:26px;flex-wrap:wrap}
+  .caixa{border:3px solid var(--tinta);border-radius:14px 10px 16px 11px/11px 15px 10px 14px;padding:12px 18px;background:#fff;line-height:1.25}
+  .caixa.alvo{border-color:var(--verde);background:var(--verde);color:#fff}
+  .seta{color:var(--verde);font-size:28px;font-weight:800}
+
+  table{border-collapse:separate;border-spacing:0;width:100%;font-family:"Baloo 2";font-size:26px}
+  th,td{padding:12px 12px;text-align:left;border-bottom:3px solid #D6E2DB}
+  th{font-size:20px;text-transform:uppercase;letter-spacing:.05em;color:var(--suave);font-weight:700}
+  .melhor{color:var(--verde);font-weight:800}
+  .tag{display:inline-block;background:var(--vermelho);color:#fff;font-size:18px;font-weight:800;
+    padding:4px 14px;border-radius:999px;margin-right:10px;font-family:"Caveat";font-size:22px}
+  .hl{background:#FFF1A8;padding:0 10px;border-radius:8px}
+  .pe{position:absolute;left:60px;right:60px;bottom:16px;display:flex;justify-content:space-between;
+    font-family:"Caveat";font-size:20px;color:#8B978F}
+  .doodle{position:absolute;pointer-events:none}
+  .lbl{font-family:"Caveat";font-weight:700;fill:var(--tinta);font-size:28px}
+
+  @media print{
+    html,body{overflow:visible;background:#fff}
+    body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .stage{position:static;transform:none;width:1280px;height:auto;top:auto;left:auto;background:#fff}
+    .slide{position:relative;display:flex!important;width:1280px;height:720px;page-break-after:always;break-after:page}
+    .slide:last-child{page-break-after:auto;break-after:auto}
+    @page{size:338.67mm 190.5mm;margin:0}
+  }
+</style>
+</head>
+<body>
+<div class="stage" id="deck">
+
+<!-- shared defs -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <filter id="rough" x="-25%" y="-25%" width="150%" height="150%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="9" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="3.2"/></filter>
+  <pattern id="hBlue" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="7" stroke="#4A6FA5" stroke-width="2.4"/></pattern>
+  <pattern id="hOrange" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="7" stroke="#E08A3C" stroke-width="2.4"/></pattern>
+  <pattern id="hTeal" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="7" stroke="#3FA6A0" stroke-width="2.4"/></pattern>
+  <pattern id="hGreen" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="7" stroke="#4FA968" stroke-width="2.4"/></pattern>
+  <pattern id="hYellow" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="7" stroke="#E3B93A" stroke-width="2.4"/></pattern>
+</defs></svg>
+
+<!-- 1 CAPA -->
+<section class="slide active">
+  <img class="mark" src="../report/assets/logo-ifg-mark.png" alt="IFG" style="position:absolute;top:34px;right:56px">
+  <div class="content" style="justify-content:center">
+    <div class="kick" style="font-size:32px">Deep Learning · IFG</div>
+    <h2 style="font-size:74px;line-height:1.03;max-width:1010px;margin-top:8px">Previsão de volume de tráfego<br>em praças de pedágio</h2>
+    <p class="hand" style="font-size:37px;margin-top:14px">Comparando redes recorrentes: <b style="color:var(--verde-forte)">SimpleRNN · GRU · LSTM</b></p>
+    <p class="body" style="margin-top:40px;color:var(--suave)">Daniel Flavio e Guilherme Martins · Instituto Federal de Goiás · Outubro de 2026</p>
+  </div>
+</section>
+
+<!-- 2 O PROBLEMA -->
+<section class="slide">
+  <div class="hd"><div><div class="kick">O problema</div><h2>Prever o movimento de amanhã</h2></div></div>
+  <div class="content">
+    <p class="body">Para cada praça de pedágio, queremos saber quantos veículos vão passar <span class="hl">no dia seguinte</span> — usando os dias anteriores.</p>
+    <div class="fluxo"><div class="caixa">Dias anteriores<br><span class="hand" style="font-size:24px">volume da praça</span></div>
+      <span class="seta">&rarr;</span><div class="caixa alvo">Próximo dia<br><b>a previsão</b></div></div>
+    <p class="hand" style="font-size:30px">É prever um número, não uma categoria. Por isso a tarefa é de <b>regressão</b>.</p>
+  </div>
+  <svg class="doodle" style="right:40px;bottom:70px" width="300" height="150" viewBox="0 0 300 150"><g filter="url(#rough)">
+    <path d="M40,110 Q40,92 58,90 L150,90 Q170,92 172,110 L172,118 Q172,126 162,126 L50,126 Q40,126 40,118 Z" fill="#E4EDF6" stroke="#22303F" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M66,90 L84,62 Q86,58 92,58 L124,58 Q130,58 132,62 L152,90 Z" fill="#E4EDF6" stroke="#22303F" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M40,110 Q40,92 58,90 L150,90 Q170,92 172,110 L172,118 Q172,126 162,126 L50,126 Q40,126 40,118 Z" fill="url(#hBlue)" opacity=".6"/>
+    <circle cx="72" cy="128" r="14" fill="#fff" stroke="#22303F" stroke-width="4"/><circle cx="140" cy="128" r="14" fill="#fff" stroke="#22303F" stroke-width="4"/>
+    <path d="M196,108 L262,108" stroke="#22303F" stroke-width="5" stroke-linecap="round"/>
+    <path d="M250,96 L272,108 L250,120" fill="none" stroke="#22303F" stroke-width="5" stroke-linejoin="round"/>
+  </g></svg>
+  <div class="pe"><span>Objetivo</span><span>2 / 14</span></div>
+</section>
+
+<!-- 3 OS DADOS -->
+<section class="slide">
+  <div class="hd"><div><div class="kick">Os dados</div><h2>Dados públicos da ANTT, de 2024 a 2026</h2></div></div>
+  <div class="content">
+    <div class="nums">
+      <div class="num"><b>9,2 mi</b><span>linhas no arquivo original</span></div>
+      <div class="num"><b>345</b><span>praças</span></div>
+      <div class="num"><b>974</b><span>dias acompanhados</span></div>
+      <div class="num"><b>43</b><span>concessionárias</span></div>
+    </div>
+    <img src="../results/figures/slide_dia_semana.png" alt="Volume por dia da semana"
+         style="width:100%;max-height:250px;object-fit:contain;border:3px solid #22303F;border-radius:14px 10px 16px 11px;background:#fff;box-shadow:4px 5px 0 rgba(34,48,63,.10)">
+  </div>
+  <div class="pe"><span>Fonte: dados.gov.br · "impressão digital" dos arquivos registrada</span><span>3 / 14</span></div>
+</section>
+
+<!-- 4 DOIS ACHADOS -->
+<section class="slide">
+  <div class="hd"><div><div class="kick">O que os dados ensinaram</div><h2>Dois achados mudaram o plano</h2></div></div>
+  <div class="content">
+    <div class="two">
+      <div class="col card t"><h3>1 · A série é diária</h3><p>A coluna chamada <i>mes_ano</i> guardava, na verdade, uma data por dia. Tratar como mensal apagaria o efeito do dia da semana.</p></div>
+      <div class="col card o"><h3>2 · A série é descontínua</h3><p>Só <b>47 das 345</b> praças têm o período inteiro. Metade tem menos de um ano — praças novas entraram no meio.</p></div>
+    </div>
+    <p class="hand" style="font-size:28px">Consequência: um modelo por praça seria inviável. Treinamos <b>um único modelo, com todas as praças</b>.</p>
+  </div>
+  <div class="pe"><span>Análise exploratória</span><span>4 / 14</span></div>
+</section>
+
+<!-- 5 O MODELO ENXERGA -->
+<section class="slide">
+  <div class="hd"><div><div class="kick">A modelagem</div><h2>O que o modelo enxerga</h2></div></div>
+  <div class="content">
+    <div class="two">
+      <div class="col card g"><h3>13 sinais por dia</h3><p><b>4 de volume:</b> passeio, comercial, motos e o total.<br><b>9 de calendário:</b> dia da semana e época do ano.</p></div>
+      <div class="col card y"><h3>Janela → resposta</h3><p>Uma <b>janela de N dias</b> entra na rede. A saída é <b>um número</b>: o total de veículos do dia seguinte.</p></div>
+    </div>
+    <div class="fluxo" style="justify-content:center">
+      <div class="caixa">janela de N dias × 13 sinais</div><span class="seta">&rarr;</span><div class="caixa alvo">total do dia seguinte</div>
+    </div>
+  </div>
+  <div class="pe"><span>Dimensões de entrada e saída</span><span>5 / 14</span></div>
+</section>
+
+<!-- 6 REGRAS -->
+<section class="slide">
+  <div class="hd"><div><div class="kick">Método</div><h2>Avaliar série temporal tem regras</h2></div></div>
+  <div class="content">
+    <ul class="lista" style="font-size:30px">
+      <li><b>Treino, validação e teste em ordem de data</b> — o teste é o futuro.</li>
+      <li><b>Nada é embaralhado:</b> a ordem dos dias nunca quebra.</li>
+      <li><b>A normalização usa só o treino.</b></li>
+      <li><b>Janela só vale se todos os dias existem.</b></li>
+    </ul>
+  </div>
+  <div class="pe"><span>Protocolo de avaliação</span><span>6 / 14</span></div>
+</section>
+
+<!-- 7 A REGUA -->
+<section class="slide">
+  <div class="hd"><div><div class="kick">A régua</div><h2>Antes de elogiar: repetir o último dia</h2></div></div>
+  <div class="content">
+    <p class="body">A previsão mais simples que existe é dizer que amanhã será igual a hoje. Um modelo só tem valor se <b>bater essa régua</b>.</p>
+    <div class="nums"><div class="num"><b>1.470</b><span>erro médio da régua (veículos)</span></div>
+      <div class="num"><b>0,94</b><span>R² da régua</span></div></div>
+    <p class="hand" style="font-size:28px">Ou seja: <b>um R² alto aqui não prova nada sozinho</b>. É por isso que a régua existe.</p>
+  </div>
+  <div class="pe"><span>Baseline obrigatório</span><span>7 / 14</span></div>
+</section>
+
+<!-- 8 ARQUITETURAS -->
+<section class="slide">
+  <div class="hd"><div><div class="kick">As três arquiteturas</div><h2>Como cada rede guarda o passado</h2></div></div>
+  <div class="content">
+    <div class="three">
+      <div class="col card g"><h3 style="color:var(--verde)">SimpleRNN</h3><p>Memória curta e simples. A mais rápida, mas esquece o passado distante.</p></div>
+      <div class="col card t"><h3 style="color:var(--verde)">GRU</h3><p>Portões que decidem o que lembrar e o que descartar. Equilíbrio entre memória e custo.</p></div>
+      <div class="col card o"><h3 style="color:var(--verde)">LSTM</h3><p>Memória de longo prazo com três portões. A mais poderosa — e a mais pesada.</p></div>
+    </div>
+    <p class="hand" style="font-size:30px;text-align:center">Mesmas entradas, mesmos dados, mesma semente. <b>Muda só a célula.</b></p>
+  </div>
+  <svg class="doodle" style="left:50%;bottom:6px;transform:translateX(-50%)" width="760" height="54" viewBox="0 0 760 54"><g filter="url(#rough)">
+    <g stroke="#22303F" stroke-width="3.4" fill="none" stroke-linejoin="round">
+      <line x1="46" y1="27" x2="86" y2="27"/><path d="M80,21 L90,27 L80,33"/>
+      <line x1="126" y1="27" x2="166" y2="27"/><path d="M160,21 L170,27 L160,33"/>
+      <line x1="206" y1="27" x2="246" y2="27"/><path d="M240,21 L250,27 L240,33"/>
+      <line x1="286" y1="27" x2="326" y2="27"/><path d="M320,21 L330,27 L320,33"/>
+      <line x1="366" y1="27" x2="406" y2="27"/><path d="M400,21 L410,27 L400,33"/>
+      <line x1="446" y1="27" x2="486" y2="27"/><path d="M480,21 L490,27 L480,33"/>
+      <line x1="526" y1="27" x2="566" y2="27"/><path d="M560,21 L570,27 L560,33"/>
+      <line x1="606" y1="27" x2="646" y2="27"/><path d="M640,21 L650,27 L640,33"/>
+    </g>
+    <g stroke="#22303F" stroke-width="3.4">
+      <circle cx="26" cy="27" r="20" fill="#DCE6F1"/><circle cx="26" cy="27" r="20" fill="url(#hBlue)" opacity=".6"/>
+      <circle cx="106" cy="27" r="20" fill="#DCEBF0"/><circle cx="106" cy="27" r="20" fill="url(#hTeal)" opacity=".6"/>
+      <circle cx="186" cy="27" r="20" fill="#DEEEDF"/><circle cx="186" cy="27" r="20" fill="url(#hGreen)" opacity=".6"/>
+      <circle cx="266" cy="27" r="20" fill="#FBF0E2"/><circle cx="266" cy="27" r="20" fill="url(#hOrange)" opacity=".6"/>
+      <circle cx="346" cy="27" r="20" fill="#E4EDF6"/><circle cx="346" cy="27" r="20" fill="url(#hBlue)" opacity=".55"/>
+      <circle cx="426" cy="27" r="20" fill="#FBF3D6"/><circle cx="426" cy="27" r="20" fill="url(#hYellow)" opacity=".7"/>
+      <circle cx="506" cy="27" r="20" fill="#DEEEDF"/><circle cx="506" cy="27" r="20" fill="url(#hGreen)" opacity=".55"/>
+      <circle cx="586" cy="27" r="20" fill="#FBF0E2"/><circle cx="586" cy="27" r="20" fill="url(#hOrange)" opacity=".6"/>
+      <circle cx="666" cy="27" r="20" fill="#DCE6F1"/><circle cx="666" cy="27" r="20" fill="url(#hBlue)" opacity=".6"/>
+    </g>
+  </g></svg>
+  <div class="pe"><span>Frente 3.2 · redes recorrentes</span><span>8 / 14</span></div>
+</section>
+
+<!-- 9 OPTUNA -->
+<section class="slide">
+  <div class="hd"><div><div class="kick">Ajuste automático</div><h2>Em vez de chutar, testar com método</h2></div></div>
+  <div class="content">
+    <div class="two">
+      <div class="col card t"><h3>Optuna</h3><p>Uma busca testa combinações de parâmetros e <b>mata cedo</b> as que vão mal. A escolha usa apenas a <b>validação</b>.</p></div>
+      <div class="col card y"><h3>O que medimos</h3><p>O erro (RMSE) na validação. O teste fica intocado até o fim — sem exceção.</p></div>
+    </div>
+    <p class="body card o" style="border-color:#E0B7BD"><span class="tag">Ressalva honesta</span>Sem GPU, a busca rodou reduzida: <b>15 tentativas</b>, parte do treino. O modelo final é retreinado com os dados completos.</p>
+  </div>
+  <div class="pe"><span>Hiperparametrização</span><span>9 / 14</span></div>
+</section>
+
+<!-- 10 FAMILIAS -->
+<section class="slide">
+  <div class="hd"><div><div class="kick">Resultados</div><h2>Quem ganha: SimpleRNN, GRU ou LSTM?</h2></div></div>
+  <div class="content">
+    <div class="card" style="padding:6px 12px">
+      <table>
+        <tr><th>Arquitetura</th><th>MAE</th><th>RMSE</th><th>Parâmetros</th><th>Treino</th></tr>
+        <tr><td class="melhor">GRU</td><td class="melhor">1.537</td><td class="melhor">2.702</td><td>11.233</td><td>9 min</td></tr>
+        <tr><td>LSTM</td><td>1.550</td><td>2.747</td><td>14.743</td><td>7 min</td></tr>
+        <tr><td>SimpleRNN</td><td>1.566</td><td>2.725</td><td>3.727</td><td>3 min</td></tr>
+      </table>
+    </div>
+    <p class="hand" style="font-size:30px">Empate técnico. O SimpleRNN chega perto gastando <b>um terço dos parâmetros</b>.</p>
+  </div>
+  <div class="pe"><span>Mesma receita para as três</span><span>10 / 14</span></div>
+</section>
+
+<!-- 11 JANELA E CAPACIDADE -->
+<section class="slide">
+  <div class="hd"><div><div class="kick">Resultados</div><h2>Quanto passado olhar — e qual tamanho ter</h2></div></div>
+  <div class="content">
+    <div class="two">
+      <div class="col card t"><h3>Quanto passado olhar</h3>
+        <table><tr><th>Janela</th><th>RMSE</th></tr>
+        <tr><td class="melhor">30 dias</td><td class="melhor">2.725</td></tr>
+        <tr><td>14 dias</td><td>3.020</td></tr><tr><td>7 dias</td><td>3.061</td></tr></table></div>
+      <div class="col card o"><h3>Quantas camadas</h3>
+        <table><tr><th>Camadas</th><th>MAE</th></tr>
+        <tr><td class="melhor">2</td><td class="melhor">1.493</td></tr>
+        <tr><td>3</td><td>1.503</td></tr><tr><td>1</td><td>1.566</td></tr></table></div>
+    </div>
+    <p class="hand" style="font-size:30px">Janela mais longa ajuda de verdade. E <b>duas camadas</b> batem uma — a terceira não acrescenta.</p>
+  </div>
+  <div class="pe"><span>Dependências de longo prazo e capacidade</span><span>11 / 14</span></div>
+</section>
+
+<!-- 12 CUSTO -->
+<section class="slide">
+  <div class="hd"><div><div class="kick">Resultados</div><h2>Desempenho tem preço</h2></div></div>
+  <div class="content">
+    <div class="card" style="padding:6px 12px">
+      <table>
+        <tr><th>Unidades</th><th>Parâmetros</th><th>MAE</th><th>Treino</th><th>Por previsão</th></tr>
+        <tr><td>32</td><td>1.505</td><td>1.713</td><td>1 min</td><td>0,07 ms</td></tr>
+        <tr><td>64</td><td>5.057</td><td>1.598</td><td>4 min</td><td>0,10 ms</td></tr>
+        <tr><td class="melhor">128</td><td>18.305</td><td class="melhor">1.514</td><td>7 min</td><td>0,12 ms</td></tr>
+      </table>
+    </div>
+    <p class="hand" style="font-size:30px">Mais unidades melhoram o erro — mas o custo cresce <b>desproporcional</b>: 12× mais parâmetros para ~12% de MAE.</p>
+  </div>
+  <div class="pe"><span>Custo x efetividade</span><span>12 / 14</span></div>
+</section>
+
+<!-- 13 TESTE -->
+<section class="slide">
+  <div class="hd"><div><div class="kick">Resultado final</div><h2>O número que vale: o teste</h2></div></div>
+  <div class="content">
+    <div class="two">
+      <div class="col card t"><h3>Futuro da mesma praça</h3>
+        <table><tr><th>Modelo</th><th>MAE</th><th>R²</th></tr>
+        <tr><td>Repetir o último dia</td><td>1.536</td><td>0,92</td></tr>
+        <tr><td>Média dos últimos dias</td><td>1.831</td><td>0,88</td></tr>
+        <tr><td class="melhor">GRU (final)</td><td class="melhor">1.126</td><td class="melhor">0,95</td></tr></table></div>
+      <div class="col card o"><h3>Praças novas</h3>
+        <table><tr><th>Modelo</th><th>MAE</th><th>R²</th></tr>
+        <tr><td>Repetir o último dia</td><td>1.774</td><td>0,92</td></tr>
+        <tr><td>Média dos últimos dias</td><td>2.028</td><td>0,89</td></tr>
+        <tr><td class="melhor">GRU (final)</td><td class="melhor">1.469</td><td class="melhor">0,94</td></tr></table></div>
+    </div>
+    <p class="hand" style="font-size:30px">O modelo bate a régua nos dois cenários — e em <b>praças novas</b> a vantagem é menor, como esperado.</p>
+  </div>
+  <div class="pe"><span>Avaliação única no teste · erros em veículos</span><span>13 / 14</span></div>
+</section>
+
+<!-- 14 FECHAMENTO -->
+<section class="slide">
+  <div class="hd"><div><div class="kick">Fechamento</div><h2>O que aprendemos e o que falta</h2></div></div>
+  <div class="content">
+    <div class="two">
+      <div class="col card g"><h3>Aprendemos</h3><p>As redes recorrentes superaram a régua. A diferença entre as três famílias, porém, é pequena — e isso também é um resultado.</p></div>
+      <div class="col card o"><h3>Limitações</h3><p>Sem placa de vídeo, a busca foi reduzida. Não fizemos validação cruzada. E só prevemos um dia à frente.</p></div>
+    </div>
+    <p class="hand" style="font-size:32px;text-align:center">Obrigado! Perguntas?</p>
+  </div>
+  <div class="pe"><span>Deep Learning · IFG · 2026</span><span>14 / 14</span></div>
+</section>
+
+</div>
+<script>
+  var slides=Array.prototype.slice.call(document.querySelectorAll('.slide')),i=0;
+  function show(n){i=Math.max(0,Math.min(slides.length-1,n));slides.forEach(function(s,k){s.classList.toggle('active',k===i)});}
+  function fit(){var e=Math.min(window.innerWidth/1280,window.innerHeight/720);document.documentElement.style.setProperty('--esc',e);}
+  window.addEventListener('resize',fit);fit();
+  function doHash(){var m=(location.hash||'').match(/(\d+)/);show(m?parseInt(m[1],10)-1:0);}
+  window.addEventListener('hashchange',doHash);doHash();
+  document.addEventListener('keydown',function(ev){
+    if(['ArrowRight','ArrowDown',' ','PageDown','Enter'].indexOf(ev.key)>=0){show(i+1);ev.preventDefault();}
+    if(['ArrowLeft','ArrowUp','PageUp'].indexOf(ev.key)>=0){show(i-1);ev.preventDefault();}
+    if(ev.key==='Home')show(0); if(ev.key==='End')show(slides.length-1);
+  });
+  window.showSlide=show;
+</script>
+</body>
+</html>
