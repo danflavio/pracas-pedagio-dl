@@ -90,7 +90,7 @@ src/              preprocess, eda, eda_cobertura, eda_anomalias, figura_dia_sema
                   dataset, model, train, optuna_search, experimentos, avaliar_teste
 results/          tabelas (CSV/JSON) e figuras (PNG)
 report/           relatorio tecnico (relatorio.md + assets/)
-slides/           apresentacao.html (14 slides) e pipeline.html (12 slides), + PDF
+slides/           apresentacao_v2 (14 slides) e pipeline (12 slides), + PDF
 docs/             enunciado, material de apoio e registro de decisoes
 download_data.py  download + manifesto (URL, data, SHA-256)
 ```
@@ -138,8 +138,8 @@ ficam em [docs/decisoes_dados.md](docs/decisoes_dados.md). Desvios de planejamen
 - Relatorio: `report/relatorio.md`. Anomalias: `results/anomalias_por_praca.csv`.
 
 - **2026-10-14 - F8 concluida: relatorio e slides prontos.** Faltam apenas o ensaio e a publicacao do link.
-- Slides: `slides/apresentacao.html` + `.pdf` (**14 slides** - a fala de 15 min) e
-  `slides/pipeline.html` + `.pdf` (**12 slides** - o passo a passo F0-F8, material de apoio).
+- Slides: `slides/apresentacao_v2.pdf` (**14 slides**, estilo hand-drawn - a fala de 15 min; v1 em
+  `slides/apresentacao.html`) e `slides/pipeline.html` + `.pdf` (**12 slides** - o passo a passo F0-F8).
 - Relatorio revisado: ganhou a analise das **curvas** (overfitting leve) e a explicacao da
   diferenca entre a receita da busca e a receita final (secoes 5.3 e 5.5).
 - **Pendencia de entrega (ate 15/10):** ensaiar a apresentacao e cronometrar (15 min).

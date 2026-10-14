@@ -178,7 +178,7 @@ Legenda de responsaveis: **A** = Daniel Flavio - **B** = Guilherme Martins - **A
 ### F8 - Relatorio, slides e revisao final - 13-15/10
 
 - [x] 13/10 - **B** - Relatorio montado em `report/relatorio.md` (6 secoes do PDF)
-- [x] 13/10 - **A** - **Slides (15 min)**: `slides/apresentacao.html` + `slides/apresentacao.pdf` (14 slides, 16:9)
+- [x] 13/10 - **A** - **Slides (15 min)**: `slides/apresentacao.html`/`.pdf` (v1) + `slides/apresentacao_v2.pdf` (estilo hand-drawn, 14 slides)
 - [ ] 14/10 - **B** - Ensaiar a apresentacao e cronometrar (15 min duros) - **PENDENTE**
 - [x] 13/10 - **A+B** - Revisao: entrega conferida e commitada (`003eba2`)
 - [x] 14/10 - **A+B** - **Link do GitHub publico/liberado** + licenca academica (`LICENSE`)

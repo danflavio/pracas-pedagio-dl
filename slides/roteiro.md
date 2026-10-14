@@ -1,6 +1,6 @@
 # Roteiro da apresentação — 15 minutos
 
-**Deck:** `slides/apresentacao.pdf` (14 slides) · **Dupla:** Daniel Flavio e Guilherme Martins
+**Deck:** `slides/apresentacao_v2.pdf` (14 slides, estilo hand-drawn) · **Dupla:** Daniel Flavio e Guilherme Martins
 **Regra de ouro:** o slide é apoio, **você** fala. Nunca leia o slide em voz alta.
 
 Tempo-alvo: **~13:55**, com ~1 min de folga dentro do limite de 15. Melhor sobrar do que estourar.
