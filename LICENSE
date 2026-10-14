@@ -1,0 +1,30 @@
+Licenca de Trabalho Academico (uso educacional)
+================================================
+
+Copyright (c) 2026 Daniel Flavio e Guilherme Martins.
+
+Este repositorio contem um trabalho academico desenvolvido para a disciplina de
+Deep Learning do Instituto Federal de Goias (IFG), com finalidade exclusivamente
+educacional.
+
+Permissao
+---------
+
+- E permitido ler, estudar, copiar e adaptar este material para fins educacionais
+  e nao comerciais, desde que sejam dados os devidos creditos aos autores e este
+  aviso seja mantido.
+- Nao e permitido o uso comercial sem autorizacao expressa dos autores.
+
+Dados
+-----
+
+- Os conjuntos de dados utilizados sao publicos e de terceiros (ANTT - Portal
+  Brasileiro de Dados Abertos / dados.gov.br) e NAO sao cobertos por esta licenca.
+  O uso dos dados segue os termos da fonte original.
+
+Aviso
+-----
+
+- Este material e fornecido "como esta", sem garantias de qualquer tipo. Os
+  autores nao se responsabilizam por qualquer uso indevido ou por decisoes
+  tomadas a partir dos resultados apresentados.

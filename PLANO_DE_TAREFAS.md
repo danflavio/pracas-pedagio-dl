@@ -181,7 +181,7 @@ Legenda de responsaveis: **A** = Daniel Flavio - **B** = Guilherme Martins - **A
 - [x] 13/10 - **A** - **Slides (15 min)**: `slides/apresentacao.html` + `slides/apresentacao.pdf` (14 slides, 16:9)
 - [ ] 14/10 - **B** - Ensaiar a apresentacao e cronometrar (15 min duros) - **PENDENTE**
 - [x] 13/10 - **A+B** - Revisao: entrega conferida e commitada (`003eba2`)
-- [ ] 15/10 - **A+B** - Garantir que o **link do GitHub esta publico/liberado** - **PENDENTE**
+- [x] 14/10 - **A+B** - **Link do GitHub publico/liberado** + licenca academica (`LICENSE`)
 
 **Pronto quando:** tudo submetido antes de 15/10, com link do GitHub testado em navegador anonimo.
 

@@ -11,6 +11,8 @@ Trabalho Pratico da disciplina de Deep Learning - serie temporal multivariada.
 | Entrega | ate 15/10 (relatorio + GitHub + estudo de hiperparametros + tabelas/graficos) |
 | Plano | [PLANO_DE_TAREFAS.md](PLANO_DE_TAREFAS.md) |
 | Decisoes | [docs/decisoes_dados.md](docs/decisoes_dados.md) |
+| Repositorio | https://github.com/danflavio/pracas-pedagio-dl |
+| Licenca | Trabalho academico - uso educacional (ver [LICENSE](LICENSE)) |
 
 ## 1. Objetivo
 
@@ -140,5 +142,6 @@ ficam em [docs/decisoes_dados.md](docs/decisoes_dados.md). Desvios de planejamen
   `slides/pipeline.html` + `.pdf` (**12 slides** - o passo a passo F0-F8, material de apoio).
 - Relatorio revisado: ganhou a analise das **curvas** (overfitting leve) e a explicacao da
   diferenca entre a receita da busca e a receita final (secoes 5.3 e 5.5).
-- **Pendencias de entrega (ate 15/10):** ensaiar a apresentacao (15 min) e deixar o
-  **link do GitHub publico** para o professor.
+- **Pendencia de entrega (ate 15/10):** ensaiar a apresentacao e cronometrar (15 min).
+- **2026-10-14 - Repositorio publico e licenca academica.** `LICENSE` adicionada (uso educacional,
+  nao comercial). Link: https://github.com/danflavio/pracas-pedagio-dl
