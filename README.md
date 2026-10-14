@@ -63,6 +63,22 @@ nbstripout --status    # confirma que instalou
 - Sem esse passo, o `git add` de qualquer `.ipynb` **falha** (o filtro e obrigatorio).
 - Para limpar um notebook **ja commitado**: `git add --renormalize notebooks/arquivo.ipynb`.
 
+### 3.1 Trocar de maquina / rodar do zero
+
+Os dados NAO vem no clone (`data/` esta no `.gitignore`). Para reconstruir tudo na outra maquina:
+
+```bash
+git pull
+pip install -r requirements.txt
+nbstripout --install --attributes .gitattributes   # so uma vez por maquina
+python download_data.py      # baixa os 3 CSVs e confere o SHA-256
+python src/preprocess.py     # gera data/trafego_pedagio.parquet
+python src/dataset.py        # gera a serie praca x dia e as janelas
+```
+
+Ja vem versionado (nao precisa reconstruir): `results/` (tabelas e figuras), `report/`,
+`slides/` e `docs/`.
+
 ## 4. Estrutura
 
 ```text
@@ -117,3 +133,5 @@ ficam em [docs/decisoes_dados.md](docs/decisoes_dados.md). Desvios de planejamen
   e MAE **1.469** (persistencia 1.774) no split por pracas - o modelo bate a regua nos dois cenarios.
 - Apresentacao: `slides/apresentacao.html` e `slides/apresentacao.pdf` (14 slides, 16:9).
 - Relatorio: `report/relatorio.md`. Anomalias: `results/anomalias_por_praca.csv`.
+- **Pendencias de entrega (ate 15/10):** ensaiar a apresentacao (15 min) e deixar o
+  **link do GitHub publico** para o professor.
