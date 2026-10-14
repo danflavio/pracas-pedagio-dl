@@ -234,6 +234,7 @@
         <tr><td>SimpleRNN</td><td>1.566</td><td>2.725</td><td>3.727</td><td>3 min</td></tr>
       </table>
       <p class="lead">Empate t&eacute;cnico: as tr&ecirc;s ficam muito pr&oacute;ximas. O SimpleRNN chega perto gastando <b>um ter&ccedil;o dos par&acirc;metros</b>.</p>
+      <p class="body suave" style="font-size:21px">Este n&uacute;mero vem da <b>receita controlada</b> (a vencedora da busca), usada aqui s&oacute; para isolar a arquitetura. A receita do modelo final &eacute; outra &mdash; e rende <b>melhor</b> (slide 13).</p>
     </div>
     <div class="pe"><span>Mesma configuração para as três</span><span>10 / 14</span></div>
   </section>
@@ -306,7 +307,8 @@
           </table>
         </div>
       </div>
-      <p class="lead">O modelo bate a r&eacute;gua nos dois cen&aacute;rios. Em <b>pra&ccedil;as novas</b> a vantagem &eacute; menor &mdash; como era de se esperar.</p>
+      <p class="lead">O modelo bate a r&eacute;gua nos dois cen&aacute;rios &mdash; com vantagem menor em <b>pra&ccedil;as novas</b>.</p>
+      <p class="body suave" style="font-size:21px">Receita final: <b>GRU, janela 30, 1 camada, 64 unidades (Adam)</b> &mdash; a melhor valida&ccedil;&atilde;o entre todos os treinos.</p>
     </div>
     <div class="pe"><span>Avalia&ccedil;&atilde;o &uacute;nica no teste &middot; erros em ve&iacute;culos</span><span>13 / 14</span></div>
   </section>

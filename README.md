@@ -83,10 +83,12 @@ Ja vem versionado (nao precisa reconstruir): `results/` (tabelas e figuras), `re
 
 ```text
 data/             dados brutos e derivados (fora do Git)
-notebooks/        exploracao e analises (EDA)
-src/              preprocess.py, dataset.py, model.py, train.py, optuna_search.py
-results/          tabelas, figuras e export da busca do Optuna
-report/           relatorio tecnico
+notebooks/        auditoria dos CSVs brutos (F1)
+src/              preprocess, eda, eda_cobertura, eda_anomalias, figura_dia_semana,
+                  dataset, model, train, optuna_search, experimentos, avaliar_teste
+results/          tabelas (CSV/JSON) e figuras (PNG)
+report/           relatorio tecnico (relatorio.md + assets/)
+slides/           apresentacao.html (14 slides) e pipeline.html (12 slides), + PDF
 docs/             enunciado, material de apoio e registro de decisoes
 download_data.py  download + manifesto (URL, data, SHA-256)
 ```
@@ -131,7 +133,12 @@ ficam em [docs/decisoes_dados.md](docs/decisoes_dados.md). Desvios de planejamen
   busca (CPU-only) foi pequeno. O modelo final usa a **config de referencia** (`results/config_final.json`).
 - F7 (`src/avaliar_teste.py`): no **teste**, MAE **1.126** (persistencia 1.536) no split cronologico
   e MAE **1.469** (persistencia 1.774) no split por pracas - o modelo bate a regua nos dois cenarios.
-- Apresentacao: `slides/apresentacao.html` e `slides/apresentacao.pdf` (14 slides, 16:9).
 - Relatorio: `report/relatorio.md`. Anomalias: `results/anomalias_por_praca.csv`.
+
+- **2026-10-14 - F8 concluida: relatorio e slides prontos.** Faltam apenas o ensaio e a publicacao do link.
+- Slides: `slides/apresentacao.html` + `.pdf` (**14 slides** - a fala de 15 min) e
+  `slides/pipeline.html` + `.pdf` (**12 slides** - o passo a passo F0-F8, material de apoio).
+- Relatorio revisado: ganhou a analise das **curvas** (overfitting leve) e a explicacao da
+  diferenca entre a receita da busca e a receita final (secoes 5.3 e 5.5).
 - **Pendencias de entrega (ate 15/10):** ensaiar a apresentacao (15 min) e deixar o
   **link do GitHub publico** para o professor.
