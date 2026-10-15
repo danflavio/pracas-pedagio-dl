@@ -50,6 +50,7 @@ Tempo-alvo: **~13:55**, com ~1 min de folga dentro do limite de 15. Melhor sobra
 - Treino, validação e teste em **ordem de data** — o teste é o futuro, ninguém viu.
 - **Nada é embaralhado.** Normalização ajustada **só no treino**.
 - Janela só vale se **todos os dias existem** — não inventamos dado em buraco de série.
+- **Aponte a figura:** os **dois cortes** — por data (treino 64% · validação 19% · teste 17%) e por praça (70/15/15). Diga que são critérios diferentes: um separa **datas**, o outro separa **praças**. Não confunda os dois.
 - Frase de efeito: "É aqui que a maioria dos trabalhos escorrega — usar o futuro para treinar."
 
 ### 7 · A régua — 1:05
