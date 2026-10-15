@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Relatório Técnico · Previsão de Tráfego em Praças de Pedágio</title>
+<style>
+@page { size: A4; margin: 1.8cm 2cm 2cm 2cm;
+  @bottom-center { content: counter(page); font-family: Charter, Georgia, serif; font-size: 9pt; color: #000; } }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #fff; color: #000; }
+body { font-family: Charter, "Bitstream Charter", Georgia, "Times New Roman", serif; font-size: 10.3pt; line-height: 1.4; }
+h1, h2, h3 { color: #000; break-after: avoid; page-break-after: avoid; }
+h1 { font-size: 17pt; line-height: 1.2; margin: 4pt 0 2pt; }
+h2 { font-size: 12.5pt; margin: 16pt 0 5pt; padding-bottom: 2pt; border-bottom: 0.8pt solid #000; }
+h3 { font-size: 11pt; margin: 11pt 0 3pt; }
+p { margin: 0 0 6pt; text-align: justify; hyphens: auto; }
+ul, ol { margin: 0 0 6pt; padding-left: 16pt; }
+li { margin: 0 0 2pt; }
+a { color: #000; text-decoration: none; }
+code { font-family: Menlo, Consolas, monospace; font-size: 8.6pt; }
+.sup { font-size: 9.5pt; text-transform: uppercase; letter-spacing: .06em; margin: 0; }
+.sub { font-size: 11pt; margin: 0 0 8pt; }
+.ident { width: 100%; border-collapse: collapse; margin: 6pt 0 4pt; font-size: 9.5pt; }
+.ident th { text-align: left; width: 24%; font-weight: bold; padding: 2.5pt 8pt 2.5pt 0; vertical-align: top; border: 0; }
+.ident td { padding: 2.5pt 0; border: 0; }
+.ident { border-top: 1pt solid #000; border-bottom: 1pt solid #000; }
+table.t { width: 100%; border-collapse: collapse; margin: 4pt 0 3pt; font-size: 9pt; font-variant-numeric: tabular-nums; }
+table.t { break-inside: avoid; page-break-inside: avoid; }
+table.t.quebra { break-inside: auto; page-break-inside: auto; }
+table.t tr { break-inside: avoid; page-break-inside: avoid; }
+table.t caption { caption-side: top; text-align: left; font-size: 9pt; font-weight: bold; padding-bottom: 3pt; }
+table.t th { font-weight: bold; text-align: left; border-top: 1pt solid #000; border-bottom: 0.6pt solid #000; padding: 2.5pt 6pt 2.5pt 0; vertical-align: bottom; }
+table.t td { padding: 2pt 6pt 2pt 0; vertical-align: top; }
+table.t tbody tr:last-child td { border-bottom: 1pt solid #000; }
+table.t td.n, table.t th.n { text-align: right; }
+table.t tr.sep td { border-top: 0.4pt solid #000; }
+table.t .b { font-weight: bold; }
+.nota { font-size: 8.8pt; margin: 0 0 8pt; }
+figure { margin: 6pt 0 8pt; text-align: center; break-inside: avoid; page-break-inside: avoid; }
+figure img { display: inline-block; vertical-align: top; }
+figcaption { font-size: 8.8pt; margin-top: 3pt; text-align: center; }
+.lado { display: flex; gap: 10pt; justify-content: center; align-items: flex-end; }
+.lado img { min-width: 0; }
+.fluxo { font-family: Menlo, Consolas, monospace; font-size: 8.8pt; text-align: center; margin: 4pt 0 6pt; }
+</style>
+</head>
+<body>
+
+<p class="sup">Instituto Federal de Goiás · Disciplina Deep Learning · Trabalho Prático</p>
+<h1>Previsão de volume de tráfego em praças de pedágio com redes recorrentes</h1>
+<p class="sub">Relatório técnico · Frente 3.2 (Redes recorrentes) · Outubro de 2026</p>
+
+<table class="ident">
+  <tr><th>Integrantes</th><td>Daniel Flavio · Guilherme Martins</td></tr>
+  <tr><th>Repositório (código)</th><td>https://github.com/danflavio/pracas-pedagio-dl</td></tr>
+  <tr><th>Conjunto de dados</th><td>ANTT · Volume de Tráfego nas Praças de Pedágio (Portal Brasileiro de Dados Abertos), arquivos diários de 2024, 2025 e 2026. Licença CC BY.<br>https://dados.antt.gov.br/dataset/volume-trafego-praca-pedagio</td></tr>
+  <tr><th>Tarefa</th><td>Regressão em série temporal multivariada, previsão um passo à frente (t+1)</td></tr>
+</table>
+
+<h2>1. Introdução e objetivo</h2>
+<p>As concessionárias de rodovias federais registram, por dia, quantos veículos passam em cada praça de pedágio. Prever esse volume com um dia de antecedência apoia o dimensionamento de cabines e equipes, a estimativa de arrecadação e o planejamento de feriados.</p>
+<ul>
+  <li><b>Unidade de observação:</b> uma praça de pedágio (par concessionária + praça) em um dia.</li>
+  <li><b>Variável alvo:</b> total de veículos na praça no dia seguinte (t+1), em veículos/dia (contínua, não negativa).</li>
+  <li><b>Tipo de problema:</b> regressão. Estratégia direta de um passo: a rede recebe os W dias anteriores (13 atributos por dia) e devolve um único valor.</li>
+  <li><b>Objetivo experimental:</b> comparar SimpleRNN, GRU e LSTM sob as mesmas condições e analisar janela, profundidade, largura, custo computacional e generalização.</li>
+</ul>
+
+<h2>2. Fonte e caracterização dos dados</h2>
+<h3>2.1 Estrutura</h3>
+<table class="t">
+  <thead><tr><th>Item</th><th>Valor</th></tr></thead>
+  <tbody>
+    <tr><td>Período</td><td>01/01/2024 a 31/08/2026 (974 dias)</td></tr>
+    <tr><td>Linhas</td><td>9.184.154 (2024: 3.312.763 · 2025: 3.274.157 · 2026: 2.597.234)</td></tr>
+    <tr><td>Colunas (8)</td><td><code>concessionaria</code>, <code>praca</code>, <code>mes_ano</code> (data), <code>sentido</code>, <code>tipo_cobranca</code>, <code>categoria_eixo</code>, <code>tipo_de_veiculo</code>, <code>volume_total</code></td></tr>
+    <tr><td>Concessionárias / praças</td><td>43 / 345</td></tr>
+    <tr><td>Volume total</td><td>2.379.466.795 veículos</td></tr>
+  </tbody>
+</table>
+<p class="nota">CSV com separador “;”, decimal “,” e codificação Latin-1. O hash SHA-256 de cada arquivo está em <code>data_manifest.json</code>.</p>
+
+<h3>2.2 Qualidade dos dados</h3>
+<table class="t quebra">
+  <thead><tr><th style="width:17%">Aspecto</th><th style="width:47%">Achado</th><th>Tratamento</th></tr></thead>
+  <tbody>
+    <tr><td>Granularidade</td><td><code>mes_ano</code>, apesar do nome, é uma data diária (366, 365 e 243 datas distintas por ano).</td><td>Modelagem diária; alvo em t+1.</td></tr>
+    <tr><td>Ausentes</td><td>A ausência aparece como dias inteiros sem registro: entre as 303 praças usadas, 106 têm lacunas, somando 1.613 dias.</td><td>Janela aceita só se todos os dias (entrada e alvo) foram observados. Nada é interpolado.</td></tr>
+    <tr><td>Cobertura</td><td>Só 47 das 345 praças cobrem os 974 dias; mediana de 432 dias.</td><td>Modelo global (uma rede para todas as praças). Filtro de ≥ 180 dias: 303 praças.</td></tr>
+    <tr><td>Duplicados</td><td>4.853 chaves repetidas (0,15%), todas em jan–mar/2025; nenhuma entre arquivos.</td><td>Volumes somados na agregação praça × dia.</td></tr>
+    <tr><td>Inconsistências</td><td>“Veículo Pequeno” só existe em 2024 (≈ 0% do volume). <code>categoria_eixo</code> mistura códigos e rótulos em 2025.</td><td>Categoria excluída; <code>categoria_eixo</code> agregada (não usada).</td></tr>
+    <tr><td>Anômalos</td><td>Critério 3 × IQR por praça: 3.751 dias (2,09%), 2,59% do volume. Os maiores são eventos reais (Réveillon na Autopista Litoral Sul, 2,4× o limite).</td><td>Mantidos: removê-los esconderia os dias mais difíceis de prever.</td></tr>
+  </tbody>
+</table>
+
+<h3>2.3 Distribuição da variável alvo</h3>
+<p>No nível de linha, <code>volume_total</code> não tem zeros nem negativos (mínimo 1) e tem assimetria de 14,9, com cauda longa à direita (Fig. 1a). Agregado por praça e dia, o alvo tem média de ≈ 13,2 mil veículos e desvio-padrão de ≈ 12,2 mil no treino<sup>1</sup>. A dispersão vem sobretudo do porte das praças: algumas passam de 80 mil veículos/dia, bem acima da média. Há padrão semanal claro, com sexta-feira como o dia mais movimentado (Fig. 1b), e picos sazonais como o Réveillon e lacunas por início de operação (Fig. 2).</p>
+<p class="nota"><sup>1</sup> Desvio-padrão obtido de RMSE/√(1 − R²) da persistência no treino (RMSE 3.133; R² 0,934).</p>
+<figure>
+  <div class="lado">
+    <img src="figuras/fig1a_hist.png" alt="Histograma de volume_total em escala log" style="width:54%">
+    <img src="figuras/fig1b_dia_semana.png" alt="Média do Total por dia da semana" style="width:40%">
+  </div>
+  <figcaption>Figura 1. (a) Distribuição de <code>volume_total</code> por linha, em escala log1p. (b) Média do alvo por dia da semana.</figcaption>
+</figure>
+<figure>
+  <img src="figuras/fig2_serie.png" alt="Série do total diário e de uma praça" style="width:80%">
+  <figcaption>Figura 2. Total diário de todas as praças e uma praça com lacunas e pico de Réveillon (Autopista Litoral Sul, P3).</figcaption>
+</figure>
+
+<h3>2.4 Atributos de entrada e risco de vazamento</h3>
+<table class="t">
+  <thead><tr><th>Atributo</th><th>Tipo</th><th>Unidade</th><th>Origem</th></tr></thead>
+  <tbody>
+    <tr><td>Passeio, Comercial, Moto</td><td>numérico contínuo</td><td>veículos/dia</td><td>soma de <code>volume_total</code> por tipo de veículo</td></tr>
+    <tr><td>Total</td><td>numérico contínuo</td><td>veículos/dia</td><td>soma dos três tipos (valor dos dias anteriores)</td></tr>
+    <tr><td>dow_0 … dow_6</td><td>binário (one-hot)</td><td>–</td><td>dia da semana</td></tr>
+    <tr><td>mes_sin, mes_cos</td><td>contínuo em [−1, 1]</td><td>–</td><td>mês em codificação cíclica</td></tr>
+  </tbody>
+</table>
+<p><code>sentido</code>, <code>tipo_cobranca</code> e <code>categoria_eixo</code> foram somados, pois o alvo é o total da praça. Identificadores de praça não entram como atributo: o modelo aprende só da dinâmica da série, o que permite aplicá-lo a praças novas. <b>Vazamento:</b> a janela contém apenas os dias t−W+1 a t; o total de t+1 nunca está na entrada, e o calendário é conhecido de antemão.</p>
+
+<h2>3. Metodologia</h2>
+<h3>3.1 Pré-processamento</h3>
+<ol>
+  <li>Agregação para praça × dia × tipo de veículo; tipos em colunas; Total = soma. Em dia observado, tipo sem registro recebe 0 (o bruto só registra volumes &gt; 0).</li>
+  <li>Filtro de praças com ≥ 180 dias e reconstrução do calendário diário, marcando dias não observados (180.737 linhas, 179.124 observadas).</li>
+  <li>Calendário: dia da semana em one-hot (7) e mês em seno/cosseno (2).</li>
+  <li>Janelas deslizantes de W dias (passo 1). Entrada X com dimensão (W × 13) e saída y escalar (Total de t+1).</li>
+  <li>Padronização z-score dos 4 canais de volume com média e desvio <b>somente do treino</b> (float64). O alvo usa a escala do canal Total; as métricas são calculadas depois de voltar a veículos.</li>
+</ol>
+<p>Com W = 30 e divisão cronológica: treino 105.754 × 30 × 13, validação 30.678 × 30 × 13, teste 27.467 × 30 × 13.</p>
+
+<h3>3.2 Divisão entre treino, validação e teste</h3>
+<table class="t">
+  <thead><tr><th>Protocolo</th><th>Treino</th><th>Validação</th><th>Teste</th><th>Mede</th></tr></thead>
+  <tbody>
+    <tr><td>Cronológico (data do alvo)</td><td>até 30/11/2025</td><td>01/12/2025 a 30/04/2026</td><td>01/05 a 31/08/2026</td><td>o futuro de praças conhecidas</td></tr>
+    <tr><td>Por grupos (praças)</td><td>70% das praças</td><td>15%</td><td>15%</td><td>praças nunca vistas</td></tr>
+  </tbody>
+</table>
+<p>Nada é embaralhado. O corte pela data do alvo garante que o alvo mais recente do treino é anterior ao mais antigo da validação, o que é verificado automaticamente em <code>src/dataset.py</code>. As praças são sorteadas com semente 42, de modo que nenhuma aparece em duas partições. A validação serve para early stopping, busca e escolha do modelo; o teste é usado uma única vez. Não houve validação cruzada (opcional), por custo.</p>
+
+<h3>3.3 Arquiteturas e treino</h3>
+<p class="fluxo">Entrada (W × 13) → L camadas recorrentes [SimpleRNN | GRU | LSTM] com U unidades → Dense(1) linear</p>
+<p>As três famílias usam a mesma estrutura e a mesma semente; muda só a célula. Nas L−1 primeiras camadas, <code>return_sequences=True</code>. Perda MSE no alvo padronizado; Adam ou RMSprop com <code>clipnorm = 1,0</code> (contra gradiente explosivo); EarlyStopping na perda de validação (paciência 6, restaura os melhores pesos) e ReduceLROnPlateau (fator 0,5, paciência 3). TensorFlow/Keras, apenas CPU.</p>
+
+<h3>3.4 Métricas e baselines</h3>
+<p><b>MAE</b> é a métrica principal (erro médio em veículos/dia). <b>RMSE</b> pesa mais os erros grandes e foi a métrica otimizada na busca, coerente com a perda MSE. <b>R²</b> é complementar. Baselines obrigatórios: <b>persistência</b> (ŷ<sub>t+1</sub> = y<sub>t</sub>) e <b>média móvel</b> da janela. Custo: parâmetros treináveis, tempo de treino e tempo de inferência por previsão (lote de validação ÷ nº de janelas).</p>
+
+<h2>4. Hiperparametrização</h2>
+<h3>4.1 Espaço de busca</h3>
+<table class="t">
+  <thead><tr><th>Hiperparâmetro</th><th>Intervalo</th><th>Justificativa</th></tr></thead>
+  <tbody>
+    <tr><td>Célula</td><td>SimpleRNN, GRU, LSTM</td><td>objeto da frente 3.2</td></tr>
+    <tr><td>Janela W</td><td>7, 14, 30 dias</td><td>uma semana, duas semanas e um mês: ciclos semanal e mensal</td></tr>
+    <tr><td>Unidades U</td><td>32 a 128 (log)</td><td>largura; efeito multiplicativo no nº de parâmetros</td></tr>
+    <tr><td>Camadas L</td><td>1, 2</td><td>profundidade; 3 camadas avaliada à parte (Seção 5.3), por custo</td></tr>
+    <tr><td>Dropout</td><td>0 a 0,3</td><td>regularização leve; o conjunto tem mais de 100 mil janelas</td></tr>
+    <tr><td>Taxa de aprendizado</td><td>10⁻⁴ a 5 × 10⁻³ (log)</td><td>faixa usual de Adam e RMSprop</td></tr>
+    <tr><td>Batch</td><td>128, 256</td><td>64 descartado por custo: 21,1 s/época contra 10,2 s com 256</td></tr>
+    <tr><td>Otimizador</td><td>Adam, RMSprop</td><td>os mais usados em redes recorrentes</td></tr>
+  </tbody>
+</table>
+<p><b>Configuração do estudo:</b> Optuna com amostrador TPE (padrão) e MedianPruner (5 tentativas iniciais, 5 épocas de aquecimento); 15 tentativas; objetivo = minimizar o RMSE na validação; até 40 épocas com paciência 5. Por orçamento de CPU, cada tentativa treinou em 50% do treino (subamostragem sistemática, sem embaralhar), com a validação completa. Registro: <code>results/optuna_trials.csv</code> e <code>results/optuna_resumo.json</code>.</p>
+
+<h3>4.2 Resultados da busca</h3>
+<table class="t">
+  <caption>Tabela 1. Tentativas completas, ordenadas pelo RMSE de validação (veículos).</caption>
+  <thead><tr><th>#</th><th>Célula</th><th class="n">W</th><th class="n">U</th><th class="n">L</th><th class="n">Dropout</th><th class="n">Taxa</th><th class="n">Batch</th><th>Otim.</th><th class="n">Épocas</th><th class="n">Tempo (s)</th><th class="n">RMSE</th></tr></thead>
+  <tbody>
+    <tr class="b"><td>12</td><td>SimpleRNN</td><td class="n">30</td><td class="n">54</td><td class="n">1</td><td class="n">0,10</td><td class="n">1,4e-3</td><td class="n">128</td><td>RMSprop</td><td class="n">35</td><td class="n">90</td><td class="n">2.770</td></tr>
+    <tr><td>14</td><td>SimpleRNN</td><td class="n">30</td><td class="n">36</td><td class="n">1</td><td class="n">0,05</td><td class="n">9,5e-4</td><td class="n">128</td><td>RMSprop</td><td class="n">28</td><td class="n">54</td><td class="n">2.774</td></tr>
+    <tr><td>1</td><td>SimpleRNN</td><td class="n">7</td><td class="n">65</td><td class="n">2</td><td class="n">0,10</td><td class="n">2,7e-4</td><td class="n">128</td><td>Adam</td><td class="n">35</td><td class="n">89</td><td class="n">2.972</td></tr>
+    <tr><td>5</td><td>GRU</td><td class="n">30</td><td class="n">63</td><td class="n">1</td><td class="n">0,21</td><td class="n">8,4e-4</td><td class="n">128</td><td>RMSprop</td><td class="n">27</td><td class="n">181</td><td class="n">3.502</td></tr>
+    <tr><td>0</td><td>GRU</td><td class="n">14</td><td class="n">43</td><td class="n">2</td><td class="n">0,08</td><td class="n">1,7e-4</td><td class="n">256</td><td>RMSprop</td><td class="n">35</td><td class="n">130</td><td class="n">3.721</td></tr>
+    <tr><td>2</td><td>SimpleRNN</td><td class="n">14</td><td class="n">50</td><td class="n">1</td><td class="n">0,20</td><td class="n">2,1e-3</td><td class="n">128</td><td>Adam</td><td class="n">9</td><td class="n">18</td><td class="n">3.835</td></tr>
+    <tr><td>4</td><td>SimpleRNN</td><td class="n">7</td><td class="n">103</td><td class="n">2</td><td class="n">0,24</td><td class="n">3,2e-3</td><td class="n">256</td><td>RMSprop</td><td class="n">29</td><td class="n">58</td><td class="n">3.915</td></tr>
+    <tr><td>11</td><td>GRU</td><td class="n">30</td><td class="n">58</td><td class="n">1</td><td class="n">0,29</td><td class="n">4,4e-4</td><td class="n">128</td><td>RMSprop</td><td class="n">5</td><td class="n">33</td><td class="n">4.266</td></tr>
+    <tr><td>3</td><td>GRU</td><td class="n">14</td><td class="n">45</td><td class="n">2</td><td class="n">0,20</td><td class="n">4,0e-3</td><td class="n">256</td><td>Adam</td><td class="n">5</td><td class="n">23</td><td class="n">4.472</td></tr>
+  </tbody>
+</table>
+<ul>
+  <li>9 tentativas completas e 6 interrompidas pelo pruner (5 delas com janela de 7 dias). As duas melhores usam janela de 30 dias.</li>
+  <li>As melhores combinam dropout baixo e taxa perto de 10⁻³. As tentativas 11 e 3 rodaram só 5 épocas e ficaram entre as piores.</li>
+  <li>Uma tentativa com GRU custou cerca de 2× uma com SimpleRNN de tamanho parecido.</li>
+  <li>A LSTM não foi amostrada em nenhuma tentativa (as 10 primeiras do TPE são aleatórias). Por isso a comparação entre famílias foi feita em experimento controlado (Seção 5.1).</li>
+</ul>
+
+<h3>4.3 Escolha da configuração final</h3>
+<p>A vencedora da busca (tentativa 12), retreinada com o treino completo, teve MAE 1.566 e RMSE 2.725 na validação; a melhor variante derivada dela chegou a MAE 1.493. A configuração de referência usada no piloto (<b>GRU, W = 30, 1 camada de 64 unidades, sem dropout, Adam com taxa 10⁻³, batch 64</b>, até 60 épocas, paciência 6) teve <b>MAE 1.108 e RMSE 2.539</b>, melhor nas duas métricas. Ela foi adotada como modelo final, com escolha feita apenas na validação. A interpretação é que o orçamento da busca (15 tentativas, metade do treino, sem batch 64) foi pequeno demais para superar uma configuração padrão.</p>
+
+<h2>5. Resultados de validação (frente 3.2)</h2>
+<p>As Seções 5.1 a 5.3 fixam a receita da busca (U = 54, RMSprop, taxa 1,4 × 10⁻³, dropout 0,10, batch 128), treinam com o treino completo e variam um fator por vez. Os valores são comparáveis entre si. Persistência na validação: MAE 1.470, RMSE 3.101, R² 0,941.</p>
+
+<h3>5.1 SimpleRNN, GRU e LSTM</h3>
+<table class="t">
+  <caption>Tabela 2. Famílias sob duas receitas de treino (W = 30, 1 camada).</caption>
+  <thead><tr><th>Receita</th><th>Célula</th><th class="n">MAE</th><th class="n">RMSE</th><th class="n">R²</th><th class="n">Parâmetros</th><th class="n">Épocas</th><th class="n">Treino (s)</th><th class="n">s/época</th><th class="n">ms/previsão</th></tr></thead>
+  <tbody>
+    <tr><td>Busca (U = 54)</td><td>SimpleRNN</td><td class="n">1.566</td><td class="n">2.725</td><td class="n">0,955</td><td class="n">3.727</td><td class="n">31</td><td class="n">170</td><td class="n">5,5</td><td class="n">0,11</td></tr>
+    <tr><td></td><td>GRU</td><td class="n">1.537</td><td class="n">2.702</td><td class="n">0,955</td><td class="n">11.233</td><td class="n">43</td><td class="n">546</td><td class="n">12,7</td><td class="n">0,14</td></tr>
+    <tr><td></td><td>LSTM</td><td class="n">1.550</td><td class="n">2.747</td><td class="n">0,954</td><td class="n">14.743</td><td class="n">34</td><td class="n">428</td><td class="n">12,6</td><td class="n">0,15</td></tr>
+    <tr class="sep"><td>Referência (U = 64)</td><td>SimpleRNN</td><td class="n">1.249</td><td class="n">2.564</td><td class="n">0,960</td><td class="n">5.057</td><td class="n">60</td><td class="n">489</td><td class="n">8,1</td><td class="n">–</td></tr>
+    <tr><td></td><td>GRU</td><td class="n b">1.108</td><td class="n b">2.539</td><td class="n b">0,961</td><td class="n">15.233</td><td class="n">48</td><td class="n">958</td><td class="n">20,0</td><td class="n">–</td></tr>
+    <tr><td></td><td>LSTM</td><td class="n">1.138</td><td class="n">2.590</td><td class="n">0,959</td><td class="n">20.033</td><td class="n">47</td><td class="n">952</td><td class="n">20,3</td><td class="n">–</td></tr>
+  </tbody>
+</table>
+<ul>
+  <li><b>Efetividade:</b> na receita da busca, as três ficam a menos de 2% entre si no MAE e batem a persistência no RMSE (≈ 12% menor), mas não no MAE. Na receita de referência, as três batem a persistência nas duas métricas; GRU e LSTM ficam próximas e a SimpleRNN tem MAE 13% maior. A GRU é a melhor nas duas receitas.</li>
+  <li><b>Custo:</b> a SimpleRNN usa cerca de 1/3 dos parâmetros da GRU e menos da metade do tempo por época. GRU e LSTM custam quase o mesmo por época na CPU, com a GRU tendo 3/4 dos parâmetros da LSTM. A inferência fica abaixo de 0,2 ms por previsão em todas.</li>
+  <li>A receita de treino pesou mais que a célula: a GRU de referência tem MAE 28% menor que a GRU da receita da busca.</li>
+</ul>
+
+<h3>5.2 Tamanho da janela e dependências de longo prazo</h3>
+<table class="t">
+  <caption>Tabela 3. Efeito da janela (SimpleRNN, 1 × 54).</caption>
+  <thead><tr><th>Janela</th><th class="n">MAE</th><th class="n">RMSE</th><th class="n">R²</th><th class="n">Épocas</th><th class="n">Treino (s)</th><th class="n">ms/previsão</th></tr></thead>
+  <tbody>
+    <tr><td>7 dias</td><td class="n">1.559</td><td class="n">3.061</td><td class="n">0,944</td><td class="n">43</td><td class="n">140</td><td class="n">0,056</td></tr>
+    <tr><td>14 dias</td><td class="n">1.579</td><td class="n">3.020</td><td class="n">0,945</td><td class="n">50</td><td class="n">179</td><td class="n">0,058</td></tr>
+    <tr class="b"><td>30 dias</td><td class="n">1.566</td><td class="n">2.725</td><td class="n">0,955</td><td class="n">31</td><td class="n">158</td><td class="n">0,111</td></tr>
+  </tbody>
+</table>
+<p>A janela de 30 dias reduz o RMSE em 11% em relação à de 7 dias, com MAE praticamente igual: a informação do último mês diminui sobretudo os erros grandes (mudanças de nível e dias atípicos), o que indica dependência útil além do ciclo semanal. O custo de inferência dobra e o de treino quase não muda; não houve sinal de instabilidade ou de overfitting maior. Janelas mais longas não foram testadas, pois exigem mais dias consecutivos observados numa série descontínua. O horizonte é t+1, adequado ao planejamento diário.</p>
+
+<h3>5.3 Profundidade, largura e custo</h3>
+<table class="t">
+  <caption>Tabela 4. Capacidade × custo (SimpleRNN, W = 30).</caption>
+  <thead><tr><th>Variante</th><th class="n">Parâmetros</th><th class="n">MAE</th><th class="n">RMSE</th><th class="n">Épocas</th><th class="n">Treino (s)</th><th class="n">ms/previsão</th></tr></thead>
+  <tbody>
+    <tr><td>1 camada × 54</td><td class="n">3.727</td><td class="n">1.566</td><td class="n">2.725</td><td class="n">31</td><td class="n">149</td><td class="n">0,106</td></tr>
+    <tr class="b"><td>2 camadas × 54</td><td class="n">9.613</td><td class="n">1.493</td><td class="n">2.604</td><td class="n">50</td><td class="n">454</td><td class="n">0,137</td></tr>
+    <tr><td>3 camadas × 54</td><td class="n">15.499</td><td class="n">1.503</td><td class="n">2.667</td><td class="n">37</td><td class="n">513</td><td class="n">0,210</td></tr>
+    <tr class="sep"><td>1 camada × 32</td><td class="n">1.505</td><td class="n">1.713</td><td class="n">3.238</td><td class="n">9</td><td class="n">40</td><td class="n">0,070</td></tr>
+    <tr><td>1 camada × 64</td><td class="n">5.057</td><td class="n">1.598</td><td class="n">2.768</td><td class="n">50</td><td class="n">262</td><td class="n">0,100</td></tr>
+    <tr class="b"><td>1 camada × 128</td><td class="n">18.305</td><td class="n">1.514</td><td class="n">2.636</td><td class="n">50</td><td class="n">395</td><td class="n">0,115</td></tr>
+  </tbody>
+</table>
+<p>A segunda camada reduz o MAE em 4,7% com 2,6× os parâmetros e 3× o tempo de treino; a terceira não acrescenta. Em largura, de 32 para 128 unidades são 12× mais parâmetros para 12% de MAE, e de 64 para 128 são 3,6× para 5%: retorno decrescente. A variante de 32 unidades parou em 9 épocas, indício de subajuste. A Figura 3 resume custo × efetividade de todas as variantes.</p>
+<figure>
+  <img src="figuras/fig4_custo.png" alt="MAE de validação por número de parâmetros" style="width:60%">
+  <figcaption>Figura 3. MAE de validação × parâmetros. Símbolos cheios: receita da busca; losangos vazados: receita de referência.</figcaption>
+</figure>
+
+<h3>5.4 Curvas de treinamento e validação</h3>
+<figure>
+  <img src="figuras/curva_gru.png" alt="Curvas de perda de treino e validação da GRU" style="width:54%">
+  <figcaption>Figura 4. Perda (MSE padronizado) por época da GRU na receita de referência. Preto: treino; cinza: validação.</figcaption>
+</figure>
+<p>Nas três famílias, a perda de treino cai rápido e a de validação oscila nas primeiras épocas, depois desce e estabiliza. A validação fica acima do treino o tempo todo (no fim, ≈ 0,044 contra 0,020 na SimpleRNN, 0,016 na GRU e 0,014 na LSTM). A distância cresce com a capacidade e indica overfitting leve, mas a validação não volta a subir, e o early stopping guarda os melhores pesos (GRU parou em 48 épocas, LSTM em 47). A SimpleRNN usou as 60 épocas e ainda melhorava devagar. As curvas das três estão em <code>results/figures/</code>.</p>
+
+<h2>6. Avaliação final no teste</h2>
+<p>Modelo final: GRU, W = 30, 1 × 64, 15.233 parâmetros. O teste foi usado uma única vez em cada protocolo, sem ajustes posteriores.</p>
+<table class="t">
+  <caption>Tabela 5. Desempenho no teste (veículos/dia).</caption>
+  <thead><tr><th>Protocolo</th><th>Modelo</th><th class="n">MAE</th><th class="n">RMSE</th><th class="n">R²</th><th class="n">MAE vs. persistência</th></tr></thead>
+  <tbody>
+    <tr><td>Cronológico</td><td>Persistência</td><td class="n">1.536</td><td class="n">3.303</td><td class="n">0,924</td><td class="n">–</td></tr>
+    <tr><td></td><td>Média móvel (30 dias)</td><td class="n">1.831</td><td class="n">4.099</td><td class="n">0,884</td><td class="n">+19%</td></tr>
+    <tr class="b"><td></td><td>GRU final</td><td class="n">1.126</td><td class="n">2.773</td><td class="n">0,947</td><td class="n">−27%</td></tr>
+    <tr class="sep"><td>Por grupos (praças novas)</td><td>Persistência</td><td class="n">1.774</td><td class="n">3.699</td><td class="n">0,921</td><td class="n">–</td></tr>
+    <tr><td></td><td>Média móvel (30 dias)</td><td class="n">2.028</td><td class="n">4.423</td><td class="n">0,888</td><td class="n">+14%</td></tr>
+    <tr class="b"><td></td><td>GRU final</td><td class="n">1.469</td><td class="n">3.276</td><td class="n">0,938</td><td class="n">−17%</td></tr>
+  </tbody>
+</table>
+<ul>
+  <li>O modelo bate as duas réguas nos dois protocolos. No cronológico, o erro médio de 1.126 veículos equivale a ≈ 8,5% do volume médio de uma praça.</li>
+  <li>No cronológico, validação (1.108) e teste (1.126) ficaram próximos: a escolha pela validação não a superajustou. Em praças novas, o MAE sobe de 1.101 (validação) para 1.469 (teste), o que mostra dependência do grupo de praças sorteado.</li>
+  <li>A persistência já tem R² de 0,92; por isso o R² isolado não comprova qualidade, e a comparação relevante é o erro relativo à régua.</li>
+</ul>
+
+<h2>7. Limitações e conclusões</h2>
+<p><b>Limitações.</b></p>
+<ul>
+  <li>Sem GPU: a busca teve 15 tentativas em metade do treino, não superou a configuração de referência e não amostrou a LSTM.</li>
+  <li>Uma semente e sem validação cruzada: não há medida de variância, e diferenças abaixo de 2% não são conclusivas.</li>
+  <li>Horizonte de um dia; não há previsão de múltiplos passos.</li>
+  <li>Sem informação de feriados: os maiores erros tendem a ocorrer em dias atípicos (Réveillon, Carnaval, eventos).</li>
+  <li>Janelas com dias faltantes são descartadas, e praças com menos de 180 dias ficam fora.</li>
+  <li>No protocolo por grupos, a divisão é só por praça: treino e teste cobrem as mesmas datas.</li>
+</ul>
+<p><b>Conclusões.</b></p>
+<ul>
+  <li>As redes recorrentes superaram a persistência nos dois protocolos, com MAE 27% menor no futuro de praças conhecidas e 17% menor em praças novas.</li>
+  <li>A GRU foi a melhor família nas duas receitas, por margem pequena. A SimpleRNN entrega erro próximo com cerca de 1/3 dos parâmetros e é a opção de melhor custo-efetividade.</li>
+  <li>A janela de 30 dias foi o fator mais consistente para reduzir erros grandes. Profundidade e largura têm retorno decrescente.</li>
+  <li>A receita de treino (otimizador, batch, regularização) pesou mais que a escolha da célula: a configuração de referência teve MAE 29% menor que a vencedora da busca.</li>
+  <li>Trabalhos futuros: busca maior com GPU, validação temporal com várias origens e sementes, previsão de vários dias e variáveis de feriado.</li>
+</ul>
+<p class="nota"><b>Reprodutibilidade:</b> ambiente em <code>requirements.lock.txt</code>; ordem de execução no <code>README.md</code> (<code>download_data.py</code> → <code>preprocess.py</code> → <code>dataset.py</code> → <code>train.py</code> → <code>optuna_search.py</code> → <code>experimentos.py</code> → <code>avaliar_teste.py</code>). Decisões sobre os dados em <code>docs/decisoes_dados.md</code>.</p>
+
+</body>
+</html>
