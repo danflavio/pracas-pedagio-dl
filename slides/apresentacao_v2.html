@@ -156,9 +156,25 @@
       <div class="col card g"><h3>13 sinais por dia</h3><p><b>4 de volume:</b> passeio, comercial, motos e o total.<br><b>9 de calendário:</b> dia da semana e época do ano.</p></div>
       <div class="col card y"><h3>Janela → resposta</h3><p>Uma <b>janela de N dias</b> entra na rede. A saída é <b>um número</b>: o total de veículos do dia seguinte.</p></div>
     </div>
-    <div class="fluxo" style="justify-content:center">
-      <div class="caixa">janela de N dias × 13 sinais</div><span class="seta">&rarr;</span><div class="caixa alvo">total do dia seguinte</div>
-    </div>
+    <svg style="display:block;width:1120px;height:158px;align-self:center" viewBox="0 0 1120 158">
+      <g filter="url(#rough)">
+        <rect x="16" y="24" width="360" height="88" rx="18" fill="none" stroke="#0E7A3C" stroke-width="4.5"/>
+        <g stroke="#22303F" stroke-width="3.6">
+          <rect x="36" y="40" width="56" height="56" rx="12" fill="#DCE6F1"/><rect x="36" y="40" width="56" height="56" rx="12" fill="url(#hBlue)" opacity=".55"/>
+          <rect x="104" y="40" width="56" height="56" rx="12" fill="#DCEBF0"/><rect x="104" y="40" width="56" height="56" rx="12" fill="url(#hTeal)" opacity=".55"/>
+          <rect x="172" y="40" width="56" height="56" rx="12" fill="#DEEEDF"/><rect x="172" y="40" width="56" height="56" rx="12" fill="url(#hGreen)" opacity=".55"/>
+          <rect x="240" y="40" width="56" height="56" rx="12" fill="#FBF0E2"/><rect x="240" y="40" width="56" height="56" rx="12" fill="url(#hOrange)" opacity=".55"/>
+          <rect x="308" y="40" width="56" height="56" rx="12" fill="#FBF3D6"/><rect x="308" y="40" width="56" height="56" rx="12" fill="url(#hYellow)" opacity=".6"/>
+        </g>
+        <text class="lbl" x="196" y="18" text-anchor="middle" font-size="25">janela de 30 dias (dias anteriores)</text>
+        <line x1="408" y1="68" x2="498" y2="68" stroke="#22303F" stroke-width="5" stroke-linecap="round"/>
+        <path d="M486,54 L510,68 L486,82" fill="none" stroke="#22303F" stroke-width="5" stroke-linejoin="round"/>
+        <rect x="532" y="24" width="104" height="88" rx="18" fill="#0E7A3C"/>
+        <text x="584" y="80" text-anchor="middle" font-size="34" font-weight="800" fill="#fff" font-family="Baloo 2">t+1</text>
+        <text class="lbl" x="584" y="18" text-anchor="middle" font-size="25">o alvo (dia seguinte)</text>
+      </g>
+    </svg>
+    <p class="hand" style="font-size:26px;text-align:center">A janela desliza 1 dia por vez — cada passo vira um exemplo de treino.</p>
   </div>
   <div class="pe"><span>Dimensões de entrada e saída</span><span>5 / 14</span></div>
 </section>

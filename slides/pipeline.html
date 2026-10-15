@@ -201,12 +201,17 @@
           </ul>
         </div>
       </div>
-      <div class="fluxo" style="justify-content:center">
-        <div class="caixa">Parquet</div><span class="seta">&rarr;</span>
-        <div class="caixa">pivô por dia</div><span class="seta">&rarr;</span>
-        <div class="caixa">janelas</div><span class="seta">&rarr;</span>
-        <div class="caixa">treino / val / teste</div><span class="seta">&rarr;</span>
-        <div class="caixa alvo">normalizado (só treino)</div>
+      <div class="duas" style="gap:30px;align-items:center">
+        <div class="col">
+          <div class="fluxo" style="font-size:19px"><div class="caixa">dias 1–30</div><span class="seta">&rarr;</span><div class="caixa alvo">alvo 31</div></div>
+          <div class="fluxo" style="font-size:19px;margin-top:7px"><div class="caixa">dias 2–31</div><span class="seta">&rarr;</span><div class="caixa alvo">alvo 32</div></div>
+          <div class="fluxo" style="font-size:19px;margin-top:7px"><div class="caixa">dias 3–32</div><span class="seta">&rarr;</span><div class="caixa alvo">alvo 33</div></div>
+        </div>
+        <div class="col">
+          <p class="denso">A janela <b>desliza 1 dia</b> por vez: cada passo = <b>1 exemplo</b>.</p>
+          <p class="denso" style="margin-top:6px">Nº de janelas = <b>dias − janela</b>. Ex.: praça de <b>180 dias</b>, janela 30 → <b>150</b>.</p>
+          <p class="denso" style="margin-top:6px">Total no projeto: <b>163.899</b> janelas (105.754 treino + 30.678 val + 27.467 teste).</p>
+        </div>
       </div>
     </div>
     <div class="pe"><span>src/dataset.py</span><span>5 / 12</span></div>
